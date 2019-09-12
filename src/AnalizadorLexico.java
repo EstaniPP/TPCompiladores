@@ -212,6 +212,7 @@ public class AnalizadorLexico {
 		String token = null;
 		while(ultimoEstado>-1) {
 			char proximoCaracter=allLines.get(contadorFila).charAt(contadorColumna);
+			System.out.println("Fila: "+contadorFila+" Columna:"+ contadorColumna+" Caracter: "+proximoCaracter);
 			contadorColumna++;
 			int columnaCaracter=mapCaracterColumna.get(proximoCaracter);
 			if(matrizAccionesSemanticas[ultimoEstado][columnaCaracter] != null) {
