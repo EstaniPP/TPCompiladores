@@ -7,7 +7,7 @@ public class AccionSemantica8 extends AccionSemantica{
 	
 	@Override
 	public String aplicar(char c, AnalizadorLexico al) {
-		// TODO Auto-generated method stub
+		al.aumentarContadorFila();
 		return null;
 	}
 }

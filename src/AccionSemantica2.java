@@ -7,7 +7,8 @@ public class AccionSemantica2 extends AccionSemantica{
 	
 	@Override
 	public String aplicar(char c, AnalizadorLexico al) {
+		al.inicializarLexema();
+		al.agregarCaracter(c);
 		return null;
-		
 	}
 }

@@ -2,6 +2,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Vector;
 
@@ -15,7 +16,7 @@ public class AnalizadorLexico {
 	private File archivo;
 	private StringBuilder lexema;
 	
-	private Vector<String> allLines;
+	private ArrayList<String> allLines;
 	private HashMap<String, Integer> codigosTokens;
 	private HashMap<Character, Integer> mapCaracterColumna;
 	private HashMap<String, HashMap<String, Object>> tablaSimbolos;
@@ -41,7 +42,7 @@ public class AnalizadorLexico {
         //LEO TODAS LAS LINEAS DEL ARCHIVO
         
 		try {
-			allLines = (Vector<String>) Files.readAllLines(Paths.get(archivo.getPath()));
+			allLines = (ArrayList<String>) Files.readAllLines(Paths.get(archivo.getPath()));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -77,6 +78,7 @@ public class AnalizadorLexico {
 		codigosTokens.put(")", 25);
 		codigosTokens.put(",", 26);
 		codigosTokens.put(";", 27);
+		codigosTokens.put("$", 28);
 				
 		//MAPEO CADA CHARACTER CON EL NUMERO DE COLUMNA CORRESPONDIENTE
 		
@@ -145,24 +147,50 @@ public class AnalizadorLexico {
 		//INICIALIZO MATRIZ TRANSICION DE ESTADOS
 		
 		matrizTransicionEstados= new int[][] {//REHACER
-			{1,2,-1,-1,-1,6,8,7,8,14,1,15,16,-1,-1,0,0,-1,-1},
+			{1,2,-2,-1,-1,3,5,4,5,10,1,11,12,-2,-1,0,0,-1,-2},
 			{1,1,1,-1,-1,-1,-1,-1,-1,-1,1,-1,-1,-1,-1,-1,-1,-1,-1},
-			{-1,2,-1,-1,-1,-1,-1,-1,-1,10,-1,-1,-1,-1,-1,-1,-1,-1,-1},
+			{-1,2,-1,-1,-1,-1,-1,-1,-1,6,-1,-1,-1,-1,-1,-1,-1,-1,-1},
+			{-2,-2,-2,-2,-2,-2,-1,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-1,-2},
 			{-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
 			{-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-			{-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-			{-1,10,-1,-1,-1,-1,-1,-1,-1,-1,11,-1,-1,-1,-1,-1,-1,-1,-1},
-			{-1,13,-1,12,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-			{-1,13,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-			{-1,13,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-			{-1,10,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-			{15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,0,-1,15},
-			{16,16,16,16,16,16,16,16,16,16,16,16,16,-1,16,16,16,-1,16}
+			{-1,6,-1,-1,-1,-1,-1,-1,-1,-1,7,-1,-1,-1,-1,-1,-1,-1,-1},
+			{-2,9,-2,8,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-1,-2},
+			{-2,9,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-1,-2},
+			{-1,9,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
+			{-2,6,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-1,-2},
+			{11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,0,-1,11},
+			{12,12,12,12,12,12,12,12,12,12,12,12,12,-1,12,12,12,-1,12}
 			};
 			
 		//INICIALIZO MATRIZ ACCIONES SEMANTICAS
-			
 		
+		AccionSemantica as1 = new AccionSemantica1();
+		AccionSemantica as2 = new AccionSemantica2();
+		AccionSemantica as3 = new AccionSemantica3();
+		AccionSemantica as4 = new AccionSemantica4();
+		AccionSemantica as5 = new AccionSemantica5();
+		AccionSemantica as6 = new AccionSemantica6();
+		AccionSemantica as7 = new AccionSemantica7();
+		AccionSemantica as8 = new AccionSemantica8();
+		AccionSemantica as9 = new AccionSemantica9();
+		AccionSemantica as10 = new AccionSemantica10();
+		AccionSemantica as11 = new AccionSemantica11();
+		AccionSemantica as12 = new AccionSemantica12();
+		matrizAccionesSemanticas = new AccionSemantica[][] {
+			{as2,as4,null,as2,as2,as2,as2,as2,as2,as4,as2,as2,as9,null,as2,null,as8,as2,null},
+			{as3,as3,as3,as1,as1,as1,as1,as1,as1,as1,as3,as1,as1,as1,as1,as1,as12,as1,as1},
+			{as6,as5,as6,as6,as6,as6,as6,as6,as6,as5,as6,as6,as6,as6,as6,as6,as8,as6,as6},
+			{null,null,null,null,null,null,as3,null,null,null,null,null,null,null,null,null,null,null,as2,null},
+			{as7,as7,as7,as7,as7,as7,as3,as7,as3,as7,as7,as7,as7,as7,as7,as7,as8,as2,as7},
+			{as7,as7,as7,as7,as7,as7,as3,as7,as7,as7,as7,as7,as7,as7,as7,as7,as8,as2,as7},
+			{as6,as5,as6,as6,as6,as6,as6,as6,as6,as6,as5,as6,as6,as6,as6,as6,as8,as2,as6},
+			{null,as5,null,as5,null,null,null,null,null,null,null,null,null,null,null,null,null,null,as2,null},
+			{null,as5,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,as2,null},
+			{as6,as5,as6,as6,as6,as6,as6,as6,as6,as6,as6,as6,as6,as6,as6,as6,as8,as2,as6},
+			{null,as5,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,as2,null},
+			{null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,as8,as2,null},
+			{as5,as5,as5,as5,as5,as5,as5,as5,as5,as5,as5,as5,as5,as11,as5,as5,as10,as2,as5}
+		};
 	}
 	
 	public void disminuirContador() {
@@ -174,22 +202,57 @@ public class AnalizadorLexico {
 		}
 	}
 	
+	public void aumentarContadorFila() {
+		contadorFila++;
+		contadorColumna = 0;
+	}
+	
 	public int getToken() {//ESTADO -2 SIGNIFICA ERROR
 		ultimoEstado=0;
-		String token;
+		String token = null;
 		while(ultimoEstado>-1) {
 			char proximoCaracter=allLines.get(contadorFila).charAt(contadorColumna);
 			contadorColumna++;
 			int columnaCaracter=mapCaracterColumna.get(proximoCaracter);
-			token=matrizAccionesSemanticas[ultimoEstado][columnaCaracter].aplicar(proximoCaracter, this);
+			if(matrizAccionesSemanticas[ultimoEstado][columnaCaracter] != null) {
+				token=matrizAccionesSemanticas[ultimoEstado][columnaCaracter].aplicar(proximoCaracter, this);
+			}
 			ultimoEstado=matrizTransicionEstados[ultimoEstado][columnaCaracter];
 		}
-		//return num || num+lexema
-		return 0;
+		if(ultimoEstado == -2) {
+			System.out.println("ERROR");
+		}else {
+			if(token != null && token.equals("ID")) {
+				return codigosTokens.get("ID");
+			}else if(token != null &&  token.equals("CTE")) {
+				return codigosTokens.get("CTE");
+			}else {
+				return codigosTokens.get(lexema.toString());
+			}
+		}
+		return -1;
 	}
 
 	public HashMap<String, Object> getAtributos() {
-		return tablaSimbolos.get(lexema);
+		return tablaSimbolos.get(lexema.toString());
 	}
+	
+	public void agregarLexema() {
+		tablaSimbolos.put(lexema.toString(), new HashMap<String,Object>());
+		tablaSimbolos.get(lexema.toString()).put("Reservada", false);
+	}
+	
+	public void inicializarLexema() {
+		lexema = new StringBuilder();
+	}
+	
+	public void agregarCaracter(char c) {
+		lexema.append(c);
+	}
+	
+	public StringBuilder getLexema() {
+		return lexema;
+	}
+	
 	
 }
