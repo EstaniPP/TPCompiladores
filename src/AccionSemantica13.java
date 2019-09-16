@@ -1,6 +1,3 @@
-import java.math.BigDecimal;
-import java.util.HashMap;
-
 public class AccionSemantica13 extends AccionSemantica{
 
 	public AccionSemantica13() {
@@ -9,15 +6,7 @@ public class AccionSemantica13 extends AccionSemantica{
 	
 	@Override
 	public String aplicar(char c, AnalizadorLexico al) {
-		BigDecimal bd = new BigDecimal(al.getLexema().toString());
-		al.aumentarContadorFila();
-		if(new BigDecimal("1.17549435E-38").compareTo(bd)<=0 && new BigDecimal("3.40282347E+38").compareTo(bd)>=0 || new BigDecimal("-1.17549435E-38").compareTo(bd)>=0 && new BigDecimal("-3.40282347E+38").compareTo(bd)<=0) {
-			if(al.getAtributos()==null) {
-				al.agregarLexema();
-			}
-			return "CTE";
-		}
-		System.out.println(al.getLexema());
+		al.agregarError("Error : Token invalido \""+al.getLexema()+"\".");
 		return "ERROR";
 	}
 }

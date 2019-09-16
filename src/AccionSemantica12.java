@@ -8,20 +8,8 @@ public class AccionSemantica12 extends AccionSemantica{
 	
 	@Override
 	public String aplicar(char c, AnalizadorLexico al) {
-
-		al.aumentarContadorFila();
-		HashMap<String, Object> atributos =al.getAtributos();
-		if(atributos!=null){
-			if((boolean)atributos.get("Reservada")) {
-				return null;
-			}
-		}else {
-			StringBuilder str = al.getLexema();
-			if(str.length() > 25) {
-				str.delete(25, str.length());
-			}
-			al.agregarLexema();
-		}
-		return "ID";
+		al.disminuirContador();
+		al.agregarError("Error : Token invalido \""+al.getLexema()+"\".");
+		return "ERROR";
 	}
 }

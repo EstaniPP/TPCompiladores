@@ -19,6 +19,7 @@ public class AccionSemantica1 extends AccionSemantica{
 			StringBuilder str = al.getLexema();
 			if(str.length() > 25) {
 				str.delete(25, str.length());
+				al.agregarError("Warning : el identificador se trunco a 25 caracteres.");
 			}
 			al.agregarLexema();
 		}

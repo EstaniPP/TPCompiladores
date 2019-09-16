@@ -21,6 +21,7 @@ public class AnalizadorLexico {
 	private File archivo;
 	private StringBuilder lexema;
 	
+	private ArrayList<String> errores;;
 	private ArrayList<String> allLines;
 	private HashMap<String, Integer> codigosTokens;
 	private HashMap<Character, Integer> mapCaracterColumna;
@@ -35,6 +36,7 @@ public class AnalizadorLexico {
 		contadorFila=0;
 		contadorColumna=0;
 		ultimoEstado=0;
+		errores = new ArrayList<String>();
 		
 		//JFILECHOOSER
 		
@@ -104,6 +106,7 @@ public class AnalizadorLexico {
 		codigosTokens.put(";", 27);
 		codigosTokens.put("$", 28);
 		codigosTokens.put("CADENA", 29);
+		codigosTokens.put("ERROR", 30);
 				
 		//MAPEO CADA CHARACTER CON EL NUMERO DE COLUMNA CORRESPONDIENTE
 		
@@ -203,17 +206,17 @@ public class AnalizadorLexico {
 		AccionSemantica as12 = new AccionSemantica12();
 		AccionSemantica as13 = new AccionSemantica13();
 		matrizAccionesSemanticas = new AccionSemantica[][] {
-			{as2,as4,null,as2,as2,as2,as2,as2,as2,as4,as2,null,as9,null,as2,null,as8,as2,null},/*Inicial*/
+			{as2,as4,as13,as2,as2,as2,as2,as2,as2,as4,as2,null,as9,as13,as2,null,as8,as2,as13},/*Inicial*/
 			{as3,as3,as3,as1,as1,as1,as1,as1,as1,as1,as3,as1,as1,as1,as1,as1,as1,as1,as1},/*ID*/
 			{as6,as5,as6,as6,as6,as6,as6,as6,as6,as5,as6,as6,as6,as6,as6,as6,as6,as6,as6},/*CTE*/
-			{null,null,null,null,null,null,as3,null,null,null,null,null,null,null,null,null,null,null,null},/*:*/
+			{as12,as12,as12,as12,as12,as12,as3,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12},/*:*/
 			{as7,as7,as7,as7,as7,as7,as3,as7,as3,as7,as7,as7,as7,as7,as7,as7,as7,as7,as7},/*<*/
 			{as7,as7,as7,as7,as7,as7,as3,as7,as7,as7,as7,as7,as7,as7,as7,as7,as7,as7,as7},/*=*/
 			{as6,as5,as6,as6,as6,as6,as6,as6,as6,as6,as5,as6,as6,as6,as6,as6,as6,as6,as6},/*. de float*/
-			{null,as5,null,as5,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null},/*E de float*/
-			{null,as5,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null},/*+- de E*/
+			{as12,as5,as12,as5,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12},/*E de float*/
+			{as12,as5,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12},/*+- de E*/
 			{as6,as5,as6,as6,as6,as6,as6,as6,as6,as6,as6,as6,as6,as6,as6,as6,as6,as6,as6},/*E-+digito*/
-			{null,as5,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null},/*. de float*/
+			{as12,as5,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12},/*. de float*/
 			{null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,as8,null,null},/*#*/
 			{as5,as5,as5,as5,as5,as5,as5,as5,as5,as5,as5,as5,as5,as11,as5,as5,as10,as5,as5}/*cadena multilinea*/
 		};
@@ -250,16 +253,11 @@ public class AnalizadorLexico {
 			}
 			ultimoEstado=matrizTransicionEstados[ultimoEstado][columnaCaracter];
 		}
-		if(ultimoEstado == -2) {
-			System.out.println("ERROR");
+		if(token != null && (token.equals("ID") || token.equals("CTE") || token.equals("CADENA") || token.equals("ERROR"))) {
+			return codigosTokens.get(token);
 		}else {
-			if(token != null && (token.equals("ID") || token.equals("CTE") || token.equals("CADENA"))) {
-				return codigosTokens.get(token);
-			}else {
-				return codigosTokens.get(lexema.toString());
-			}
+			return codigosTokens.get(lexema.toString());
 		}
-		return -2;
 	}
 
 	public HashMap<String, Object> getAtributos() {
@@ -281,6 +279,25 @@ public class AnalizadorLexico {
 	
 	public StringBuilder getLexema() {
 		return lexema;
+	}
+	
+	public String getDatosTablaSimbolos() {
+		StringBuilder texto =  new StringBuilder();
+		for(String s : tablaSimbolos.keySet()) {
+			texto.append(s+":\n");
+			for(String prop : tablaSimbolos.get(s).keySet()) {
+				texto.append("    "+prop+": "+tablaSimbolos.get(s).get(prop).toString()+"\n");
+			}
+		}
+		return texto.toString();
+	}
+
+	public void agregarError(String string) {
+		errores.add("Numero de linea: "+ contadorFila +" - "+ string);
+	}
+	
+	public ArrayList<String> getErrores() {
+		return errores;
 	}
 	
 	

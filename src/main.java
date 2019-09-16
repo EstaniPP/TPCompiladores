@@ -10,7 +10,7 @@ public class main {
 			token = a.getToken();
 			System.out.println("token" + token);
 		}
-		
+		for(String s : a.getErrores()) {System.out.println(s);}
 	}
 
 }

@@ -16,7 +16,7 @@ public class AccionSemantica6 extends AccionSemantica{
 			}
 			return "CTE";
 		}
-		System.out.println(al.getLexema());
+		al.agregarError("Error : constante fuera de rango.");
 		return "ERROR";
 	}
 }
