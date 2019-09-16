@@ -8,7 +8,7 @@ public class main {
 		int token = 0;
 		while(token != 28) {
 			token = a.getToken();
-			System.out.println(token);
+			System.out.println("token" + token);
 		}
 		
 	}

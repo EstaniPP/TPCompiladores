@@ -8,6 +8,8 @@ public class AccionSemantica12 extends AccionSemantica{
 	
 	@Override
 	public String aplicar(char c, AnalizadorLexico al) {
+
+		al.aumentarContadorFila();
 		HashMap<String, Object> atributos =al.getAtributos();
 		if(atributos!=null){
 			if((boolean)atributos.get("Reservada")) {
@@ -20,7 +22,6 @@ public class AccionSemantica12 extends AccionSemantica{
 			}
 			al.agregarLexema();
 		}
-		al.aumentarContadorFila();
 		return "ID";
 	}
 }

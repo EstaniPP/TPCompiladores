@@ -8,6 +8,6 @@ public class AccionSemantica11 extends AccionSemantica{
 	@Override
 	public String aplicar(char c, AnalizadorLexico al) {
 		al.agregarLexema();
-		return null;
+		return "CADENA";
 	}
 }
