@@ -106,6 +106,7 @@ public class AnalizadorLexico {
 		codigosTokens.put("$", 28);
 		codigosTokens.put("CADENA", 29);
 		codigosTokens.put("ERROR", 30);
+		codigosTokens.put("void", 31);
 				
 		//MAPEO CADA CHARACTER CON EL NUMERO DE COLUMNA CORRESPONDIENTE
 		
