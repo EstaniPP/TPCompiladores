@@ -1,3 +1,5 @@
+package AccionesSemanticas;
+import AnalizadorLexico.AnalizadorLexico;
 
 public class AccionSemantica8 extends AccionSemantica{
 

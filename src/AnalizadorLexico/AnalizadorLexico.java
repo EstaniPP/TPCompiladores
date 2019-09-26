@@ -1,17 +1,25 @@
+package AnalizadorLexico;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.LineNumberReader;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Vector;
-
 import javax.swing.JFileChooser;
+import AccionesSemanticas.AccionSemantica;
+import AccionesSemanticas.AccionSemantica1;
+import AccionesSemanticas.AccionSemantica10;
+import AccionesSemanticas.AccionSemantica11;
+import AccionesSemanticas.AccionSemantica12;
+import AccionesSemanticas.AccionSemantica13;
+import AccionesSemanticas.AccionSemantica2;
+import AccionesSemanticas.AccionSemantica3;
+import AccionesSemanticas.AccionSemantica4;
+import AccionesSemanticas.AccionSemantica5;
+import AccionesSemanticas.AccionSemantica6;
+import AccionesSemanticas.AccionSemantica7;
+import AccionesSemanticas.AccionSemantica8;
+import AccionesSemanticas.AccionSemantica9;
 
 public class AnalizadorLexico {
 	
@@ -48,15 +56,6 @@ public class AnalizadorLexico {
         
         //LEO TODAS LAS LINEAS DEL ARCHIVO
         
-		/*try {
-			allLines = (ArrayList<String>) Files.readAllLines(Paths.get(archivo.getPath()));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		for(String s : allLines) {
-			s = s + "\n";
-			System.out.println(s);
-		}*/
         allLines = new ArrayList<String>();
         BufferedReader reader;
 		try {
@@ -187,7 +186,7 @@ public class AnalizadorLexico {
 			{-1,9,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
 			{-2,6,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-1,-2},
 			{11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,0,11,11},
-			{12,12,12,12,12,12,12,12,12,12,12,12,12,-1,12,12,12,12,12}
+			{12,12,12,12,12,12,12,12,12,12,12,12,12,-1,12,12,12,-2,12}
 			};
 			
 		//INICIALIZO MATRIZ ACCIONES SEMANTICAS
@@ -207,18 +206,18 @@ public class AnalizadorLexico {
 		AccionSemantica as13 = new AccionSemantica13();
 		matrizAccionesSemanticas = new AccionSemantica[][] {
 			{as2,as4,as13,as2,as2,as2,as2,as2,as2,as4,as2,null,as9,as13,as2,null,as8,as2,as13},/*Inicial*/
-			{as3,as3,as3,as1,as1,as1,as1,as1,as1,as1,as3,as1,as1,as1,as1,as1,as1,as1,as1},/*ID*/
-			{as6,as5,as6,as6,as6,as6,as6,as6,as6,as5,as6,as6,as6,as6,as6,as6,as6,as6,as6},/*CTE*/
-			{as12,as12,as12,as12,as12,as12,as3,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12},/*:*/
-			{as7,as7,as7,as7,as7,as7,as3,as7,as3,as7,as7,as7,as7,as7,as7,as7,as7,as7,as7},/*<*/
-			{as7,as7,as7,as7,as7,as7,as3,as7,as7,as7,as7,as7,as7,as7,as7,as7,as7,as7,as7},/*=*/
+			{as5,as5,as5,as1,as1,as1,as1,as1,as1,as1,as5,as1,as1,as1,as1,as1,as1,as1,as1},/*ID*/
+			{as3,as5,as3,as3,as3,as3,as3,as3,as3,as5,as3,as3,as3,as3,as3,as3,as3,as3,as3},/*CTE*/
+			{as12,as12,as12,as12,as12,as12,as5,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12},/*:*/
+			{as7,as7,as7,as7,as7,as7,as5,as7,as5,as7,as7,as7,as7,as7,as7,as7,as7,as7,as7},/*<*/
+			{as7,as7,as7,as7,as7,as7,as5,as7,as7,as7,as7,as7,as7,as7,as7,as7,as7,as7,as7},/*=*/
 			{as6,as5,as6,as6,as6,as6,as6,as6,as6,as6,as5,as6,as6,as6,as6,as6,as6,as6,as6},/*. de float*/
 			{as12,as5,as12,as5,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12},/*E de float*/
 			{as12,as5,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12},/*+- de E*/
 			{as6,as5,as6,as6,as6,as6,as6,as6,as6,as6,as6,as6,as6,as6,as6,as6,as6,as6,as6},/*E-+digito*/
 			{as12,as5,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12},/*. de float*/
 			{null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,as8,null,null},/*#*/
-			{as5,as5,as5,as5,as5,as5,as5,as5,as5,as5,as5,as5,as5,as11,as5,as5,as10,as5,as5}/*cadena multilinea*/
+			{as5,as5,as5,as5,as5,as5,as5,as5,as5,as5,as5,as5,as5,as11,as5,as5,as10,as12,as5}/*cadena multilinea*/
 		};
 	}
 	
@@ -247,7 +246,12 @@ public class AnalizadorLexico {
 				proximoCaracter=allLines.get(contadorFila).charAt(contadorColumna);
 			}
 			contadorColumna++;
-			int columnaCaracter=mapCaracterColumna.get(proximoCaracter);
+			int columnaCaracter;
+			if(mapCaracterColumna.containsKey(proximoCaracter)) {
+				columnaCaracter=mapCaracterColumna.get(proximoCaracter);
+			}else {
+				columnaCaracter=18;
+			}
 			if(matrizAccionesSemanticas[ultimoEstado][columnaCaracter] != null) {
 				token=matrizAccionesSemanticas[ultimoEstado][columnaCaracter].aplicar(proximoCaracter, this);
 			}
@@ -293,7 +297,7 @@ public class AnalizadorLexico {
 	}
 
 	public void agregarError(String string) {
-		errores.add("Numero de linea: "+ contadorFila +" - "+ string);
+		errores.add("Numero de linea: "+ (contadorFila+1) +" - "+ string);
 	}
 	
 	public ArrayList<String> getErrores() {

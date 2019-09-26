@@ -1,4 +1,7 @@
+package AccionesSemanticas;
 import java.util.HashMap;
+
+import AnalizadorLexico.AnalizadorLexico;
 
 public class AccionSemantica1 extends AccionSemantica{
 

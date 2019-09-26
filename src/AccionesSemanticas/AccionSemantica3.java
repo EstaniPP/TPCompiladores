@@ -1,3 +1,7 @@
+package AccionesSemanticas;
+import java.math.BigDecimal;
+
+import AnalizadorLexico.AnalizadorLexico;
 
 public class AccionSemantica3 extends AccionSemantica{
 
@@ -7,7 +11,15 @@ public class AccionSemantica3 extends AccionSemantica{
 	
 	@Override
 	public String aplicar(char c, AnalizadorLexico al) {
-		al.agregarCaracter(c);
-		return null;
+		al.disminuirContador();
+		BigDecimal bd = new BigDecimal(al.getLexema().toString());
+		if(new BigDecimal("32768").compareTo(bd)>=0) {
+			if(al.getAtributos()==null) {
+				al.agregarLexema();
+			}
+			return "CTE";
+		}
+		al.agregarError("Error : constante entera fuera de rango.");
+		return "ERROR";
 	}
 }

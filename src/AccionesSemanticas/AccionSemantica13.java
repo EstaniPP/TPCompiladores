@@ -1,3 +1,6 @@
+package AccionesSemanticas;
+import AnalizadorLexico.AnalizadorLexico;
+
 public class AccionSemantica13 extends AccionSemantica{
 
 	public AccionSemantica13() {
@@ -6,7 +9,7 @@ public class AccionSemantica13 extends AccionSemantica{
 	
 	@Override
 	public String aplicar(char c, AnalizadorLexico al) {
-		al.agregarError("Error : Token invalido \""+al.getLexema()+"\".");
+		al.agregarError("Error : Token invalido \""+c+"\".");
 		return "ERROR";
 	}
 }
