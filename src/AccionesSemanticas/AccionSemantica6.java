@@ -1,7 +1,7 @@
 package AccionesSemanticas;
 import java.math.BigDecimal;
 
-import AnalizadorLexico.AnalizadorLexico;
+import Analizadores.AnalizadorLexico;
 
 public class AccionSemantica6 extends AccionSemantica{
 

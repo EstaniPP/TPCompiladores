@@ -1,4 +1,4 @@
-package AnalizadorLexico;
+package Analizadores;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -6,20 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import javax.swing.JFileChooser;
-import AccionesSemanticas.AccionSemantica;
-import AccionesSemanticas.AccionSemantica1;
-import AccionesSemanticas.AccionSemantica10;
-import AccionesSemanticas.AccionSemantica11;
-import AccionesSemanticas.AccionSemantica12;
-import AccionesSemanticas.AccionSemantica13;
-import AccionesSemanticas.AccionSemantica2;
-import AccionesSemanticas.AccionSemantica3;
-import AccionesSemanticas.AccionSemantica4;
-import AccionesSemanticas.AccionSemantica5;
-import AccionesSemanticas.AccionSemantica6;
-import AccionesSemanticas.AccionSemantica7;
-import AccionesSemanticas.AccionSemantica8;
-import AccionesSemanticas.AccionSemantica9;
+import AccionesSemanticas.*;
 
 public class AnalizadorLexico {
 	
@@ -75,38 +62,39 @@ public class AnalizadorLexico {
 		//ASIGNO CODIGO DE TOKEN
 		
 		codigosTokens=new HashMap<String, Integer>();
-		codigosTokens.put("ID", 0);
-		codigosTokens.put("CTE", 1);
-		codigosTokens.put("if", 2);
-		codigosTokens.put("else", 3);
-		codigosTokens.put("end_if", 4);
-		codigosTokens.put("print", 5);
-		codigosTokens.put("int", 6);
-		codigosTokens.put("begin", 7);
-		codigosTokens.put("end", 8);
-		codigosTokens.put("float", 9);
-		codigosTokens.put("for", 10);
-		codigosTokens.put("class", 11);
-		codigosTokens.put("extends", 12);
-		codigosTokens.put("+", 13);
-		codigosTokens.put("-", 14);
-		codigosTokens.put("*", 15);
-		codigosTokens.put("/", 16);
-		codigosTokens.put(":=", 17);
-		codigosTokens.put(">=", 18);
-		codigosTokens.put("<=", 19);
-		codigosTokens.put(">", 20);
-		codigosTokens.put("<", 21);
-		codigosTokens.put("==", 22);
-		codigosTokens.put("<>", 23);
-		codigosTokens.put("(", 24);
-		codigosTokens.put(")", 25);
-		codigosTokens.put(",", 26);
-		codigosTokens.put(";", 27);
-		codigosTokens.put("$", 28);
-		codigosTokens.put("CADENA", 29);
-		codigosTokens.put("ERROR", 30);
-		codigosTokens.put("void", 31);
+
+		codigosTokens.put("$", 0);
+		codigosTokens.put("(", 40);
+		codigosTokens.put(")", 41);
+		codigosTokens.put("*", 42);
+		codigosTokens.put("+", 43);
+		codigosTokens.put(",", 44);
+		codigosTokens.put("-", 45);
+		codigosTokens.put("/", 47);
+		codigosTokens.put(";", 59);
+		codigosTokens.put("<", 60);
+		codigosTokens.put(">", 62);
+		codigosTokens.put("ID", 257);
+		codigosTokens.put("CTE", 258);
+		codigosTokens.put("if", 259);
+		codigosTokens.put("else", 260);
+		codigosTokens.put("end_if", 261);
+		codigosTokens.put("print", 262);
+		codigosTokens.put("int", 263);
+		codigosTokens.put("begin", 264);
+		codigosTokens.put("end", 265);
+		codigosTokens.put("float", 266);
+		codigosTokens.put("for", 267);
+		codigosTokens.put("class", 268);
+		codigosTokens.put("extends", 269);
+		codigosTokens.put("CADENA", 270);
+		codigosTokens.put("ERROR", 271);
+		codigosTokens.put("void", 272);
+		codigosTokens.put(">=", 273);
+		codigosTokens.put("<=", 274);
+		codigosTokens.put("==", 275);
+		codigosTokens.put("<>", 276);
+		codigosTokens.put(":=", 277);
 				
 		//MAPEO CADA CHARACTER CON EL NUMERO DE COLUMNA CORRESPONDIENTE
 		
@@ -143,7 +131,6 @@ public class AnalizadorLexico {
 		mapCaracterColumna.put('	', 15);//PREGUNTAR TAB
 		mapCaracterColumna.put('\n', 16);//PREGUNTAR SALTO DE LINEA
 		mapCaracterColumna.put('$', 17);
-		//FILA 18 EN CASO DE QUE NO CONTAINS LA KEY(OTRO).
 		
 		//INICIALIZO TABLA DE SIMBOLOS CON PALABRAS RESERVADAS
 		
@@ -205,8 +192,10 @@ public class AnalizadorLexico {
 		AccionSemantica as11 = new AccionSemantica11();
 		AccionSemantica as12 = new AccionSemantica12();
 		AccionSemantica as13 = new AccionSemantica13();
+		AccionSemantica as14 = new AccionSemantica14();
+		
 		matrizAccionesSemanticas = new AccionSemantica[][] {
-			{as2,as4,as13,as2,as2,as2,as2,as2,as2,as4,as2,null,as9,as13,as2,null,as8,as2,as13},/*Inicial*/
+			{as2,as4,as13,as2,as2,as2,as2,as2,as2,as4,as2,null,as9,as13,as2,null,as8,as2,as14},/*Inicial*/
 			{as5,as5,as5,as1,as1,as1,as1,as1,as1,as1,as5,as1,as1,as1,as1,as1,as1,as1,as1},/*ID*/
 			{as3,as5,as3,as3,as3,as3,as3,as3,as3,as5,as3,as3,as3,as3,as3,as3,as3,as3,as3},/*CTE*/
 			{as12,as12,as12,as12,as12,as12,as5,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12},/*:*/
@@ -236,7 +225,7 @@ public class AnalizadorLexico {
 		contadorColumna = 0;
 	}
 	
-	public int getToken() {//ESTADO -2 SIGNIFICA ERROR
+	public int yylex() {//ESTADO -2 SIGNIFICA ERROR
 		ultimoEstado=0;
 		String token = null;
 		while(ultimoEstado>-1) {
@@ -258,7 +247,10 @@ public class AnalizadorLexico {
 			}
 			ultimoEstado=matrizTransicionEstados[ultimoEstado][columnaCaracter];
 		}
-		if(token != null && (token.equals("ID") || token.equals("CTE") || token.equals("CADENA") || token.equals("ERROR"))) {
+		if(token != null && (token.equals("ID") || token.equals("CTE") || token.equals("CADENA"))) {
+			//hacer yyval
+			return codigosTokens.get(token);
+		}else if(token != null && token.equals("ERROR")){
 			return codigosTokens.get(token);
 		}else {
 			return codigosTokens.get(lexema.toString());

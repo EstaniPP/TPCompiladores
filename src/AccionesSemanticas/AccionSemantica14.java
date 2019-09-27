@@ -1,16 +1,15 @@
 package AccionesSemanticas;
 import Analizadores.AnalizadorLexico;
 
-public class AccionSemantica2 extends AccionSemantica{
+public class AccionSemantica14 extends AccionSemantica{
 
-	public AccionSemantica2() {
+	public AccionSemantica14() {
 		// TODO Auto-generated constructor stub
 	}
 	
 	@Override
 	public String aplicar(char c, AnalizadorLexico al) {
-		al.inicializarLexema();
-		al.agregarCaracter(c);
-		return null;
+		al.agregarError("Error : Caracter invalido \""+c+"\".");
+		return "ERROR";
 	}
 }
