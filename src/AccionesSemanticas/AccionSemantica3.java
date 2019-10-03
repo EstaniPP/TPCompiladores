@@ -14,9 +14,8 @@ public class AccionSemantica3 extends AccionSemantica{
 		al.disminuirContador();
 		BigDecimal bd = new BigDecimal(al.getLexema().toString());
 		if(new BigDecimal("32768").compareTo(bd)>=0) {
-			if(al.getAtributos()==null) {
 				al.agregarLexema();
-			}
+				al.agregarAtributoLexema(bd.toString(), "Tipo", "int");
 			return "CTE";
 		}
 		al.agregarError("Error : constante entera fuera de rango.");

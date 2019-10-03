@@ -1,4 +1,7 @@
-package Analizadores;
+//#############################################
+	package Analizadores;
+	import java.util.ArrayList;
+//#############################################
 /**
  * BYACC/J Semantic Value for parser: Parser
  * This class provides some of the functionality

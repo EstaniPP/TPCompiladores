@@ -3,6 +3,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import javax.swing.JFileChooser;
@@ -70,6 +71,7 @@ public class AnalizadorLexico {
 		codigosTokens.put("+", 43);
 		codigosTokens.put(",", 44);
 		codigosTokens.put("-", 45);
+		codigosTokens.put(".", 46);
 		codigosTokens.put("/", 47);
 		codigosTokens.put(";", 59);
 		codigosTokens.put("<", 60);
@@ -88,7 +90,7 @@ public class AnalizadorLexico {
 		codigosTokens.put("class", 268);
 		codigosTokens.put("extends", 269);
 		codigosTokens.put("CADENA", 270);
-		codigosTokens.put("ERROR", 271);
+		codigosTokens.put("ERROR", 256);
 		codigosTokens.put("void", 272);
 		codigosTokens.put(">=", 273);
 		codigosTokens.put("<=", 274);
@@ -172,7 +174,7 @@ public class AnalizadorLexico {
 			{-2,9,-2,8,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-1,-2},
 			{-2,9,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-1,-2},
 			{-1,9,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
-			{-2,6,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-2,-1,-2},
+			{-1,6,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
 			{11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,0,11,11},
 			{12,12,12,12,12,12,12,12,12,12,12,12,12,-1,12,12,12,-2,12}
 			};
@@ -200,12 +202,12 @@ public class AnalizadorLexico {
 			{as3,as5,as3,as3,as3,as3,as3,as3,as3,as5,as3,as3,as3,as3,as3,as3,as3,as3,as3},/*CTE*/
 			{as12,as12,as12,as12,as12,as12,as5,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12},/*:*/
 			{as7,as7,as7,as7,as7,as7,as5,as7,as5,as7,as7,as7,as7,as7,as7,as7,as7,as7,as7},/*<*/
-			{as7,as7,as7,as7,as7,as7,as5,as7,as7,as7,as7,as7,as7,as7,as7,as7,as7,as7,as7},/*=*/
+			{as7,as7,as7,as7,as7,as7,as5,as7,as7,as7,as7,as7,as7,as7,as7,as7,as7,as7,as7},/*= o >*/
 			{as6,as5,as6,as6,as6,as6,as6,as6,as6,as6,as5,as6,as6,as6,as6,as6,as6,as6,as6},/*. de float*/
 			{as12,as5,as12,as5,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12},/*E de float*/
 			{as12,as5,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12},/*+- de E*/
 			{as6,as5,as6,as6,as6,as6,as6,as6,as6,as6,as6,as6,as6,as6,as6,as6,as6,as6,as6},/*E-+digito*/
-			{as12,as5,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12,as12},/*. de float*/
+			{as7,as5,as7,as7,as7,as7,as7,as7,as7,as7,as7,as7,as7,as7,as7,as7,as7,as7,as7},/*. de float*/
 			{null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,as8,null,null},/*#*/
 			{as5,as5,as5,as5,as5,as5,as5,as5,as5,as5,as5,as5,as5,as11,as5,as5,as10,as12,as5}/*cadena multilinea*/
 		};
@@ -248,7 +250,6 @@ public class AnalizadorLexico {
 			ultimoEstado=matrizTransicionEstados[ultimoEstado][columnaCaracter];
 		}
 		if(token != null && (token.equals("ID") || token.equals("CTE") || token.equals("CADENA"))) {
-			//hacer yyval
 			return codigosTokens.get(token);
 		}else if(token != null && token.equals("ERROR")){
 			return codigosTokens.get(token);
@@ -262,8 +263,13 @@ public class AnalizadorLexico {
 	}
 	
 	public void agregarLexema() {
-		tablaSimbolos.put(lexema.toString(), new HashMap<String,Object>());
-		tablaSimbolos.get(lexema.toString()).put("Reservada", false);
+		if(tablaSimbolos.containsKey(lexema.toString())) {
+			tablaSimbolos.get(lexema.toString()).put("Contador",((Integer)tablaSimbolos.get(lexema.toString()).get("Contador"))+1);
+		}else {
+			tablaSimbolos.put(lexema.toString(), new HashMap<String,Object>());
+			tablaSimbolos.get(lexema.toString()).put("Reservada", false);
+			tablaSimbolos.get(lexema.toString()).put("Contador", 1);
+		}
 	}
 	
 	public void inicializarLexema() {
@@ -297,5 +303,44 @@ public class AnalizadorLexico {
 		return errores;
 	}
 	
+	public void actualizarTablaSimbolos(String lexema) {
+		if(tablaSimbolos.containsKey("-"+lexema)) {
+			tablaSimbolos.get("-"+lexema).put("Contador",((Integer)tablaSimbolos.get("-"+lexema).get("Contador"))+1);
+		}else {
+			tablaSimbolos.put("-"+lexema, new HashMap<String,Object>());
+			tablaSimbolos.get("-"+lexema).put("Reservada", false);
+			tablaSimbolos.get("-"+lexema).put("Tipo",tablaSimbolos.get(lexema).get("Tipo"));
+			tablaSimbolos.get("-"+lexema).put("Contador", 1);
+		}
+		tablaSimbolos.get(lexema).put("Contador",((Integer)tablaSimbolos.get(lexema).get("Contador"))-1);
+		if(((Integer)tablaSimbolos.get(lexema).get("Contador")) == 0) {
+			tablaSimbolos.remove(lexema);
+		}
+	}
 	
+	public boolean verificarRango(String lexema){
+		if(tablaSimbolos.get(lexema).get("Tipo") == "int") {
+			BigDecimal bd = new BigDecimal(lexema);
+			if(new BigDecimal("32767").compareTo(bd)<=0) {
+				return false;
+			}
+		}
+		return true;
+	}		
+	
+	public void agregarAtributoLexema(String lexema, String key, Object valor) {
+		tablaSimbolos.get(lexema).put(key, valor);
+	}
+	
+	public ParserVal getyylval() {
+		return new ParserVal(lexema.toString());
+	}
+	
+	public int getContadorFila() {
+		return contadorFila;
+	}
+	
+	public HashMap<String, HashMap<String, Object>> getTablaSimbolos() {
+		return tablaSimbolos;
+	}
 }
