@@ -21,10 +21,8 @@ declaraciones: declaracion_clase
 			  | declaracion_clase declaraciones 
 			 ;
 
-declaracion_clase: CLASS ID BEGIN declaracion_sentencia_clase END {System.out.println("Linea - "+ (aLexico.getContadorFila()+1)+" - Declaracion de clase.");
-																	aLexico.agregarAtributoLexema($1.sval,"Tipo","clase");}
-		    		|CLASS ID EXTENDS lista_variables BEGIN declaracion_sentencia_clase  END {System.out.println("Linea - "+ (aLexico.getContadorFila()+1)+" - Declaracion de clase con herencia multiple.");
-			 																			aLexico.agregarAtributoLexema($1.sval,"Tipo","clase");}
+declaracion_clase: CLASS ID BEGIN declaracion_sentencia_clase END {System.out.println("Linea - "+ (aLexico.getContadorFila()+1)+" - Declaracion de clase.");}
+		    	  |CLASS ID EXTENDS lista_variables BEGIN declaracion_sentencia_clase  END {System.out.println("Linea - "+ (aLexico.getContadorFila()+1)+" - Declaracion de clase con herencia multiple.");}
 					
 		;
 
@@ -37,40 +35,49 @@ declaracion_sentencia_clase: declaracion_sentencia
 declaracion_metodo: VOID ID '(' ')' BEGIN sentencias_ejecutables END {System.out.println("Linea - "+ (aLexico.getContadorFila()+1)+" - Declaracion de metodo.");}
 		         ;
 
-declaracion_sentencia: tipo lista_variables ';' {System.out.println("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia declarativa");
-						 agregarTipoVariables($1.sval);
-						 variables.clear();}
+declaracion_sentencia: tipo lista_variables ';' {System.out.println("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia declarativa");}
 		;
 
 tipo: INT
       | FLOAT
-      | ID {verificarDeclaracionClase($1.sval);}
+      | ID
       ;
 
-lista_variables: ID {variables.add($1.sval);
-		     aLexico.agregarAtributoLexema($1.sval,"Declarada",new Boolean(true));}
-		| ID ',' lista_variables {variables.add($1.sval);
-					  aLexico.agregarAtributoLexema($1.sval,"Declarada",new Boolean(true));}
+lista_variables: ID
+		| ID ',' lista_variables
 		;
 
 sentencias_ejecutables: sentencia_ej
 	   | sentencia_ej sentencias_ejecutables
 	   ;
 
-sentencia_ej: asignacion ';'
-	        | PRINT '(' CADENA ')' ';' {System.out.println("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia print");}
+sentencia_ej: asignacion
+	        | impresion
 	        | seleccion
-	        |  FOR '(' asignacion ';' condicion ';' expresion ')' bloque ';' {System.out.println("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia for");}
-	        | ID '.' ID '(' ')' ';' {System.out.println("LLamado a metodo de objeto.");
-					 verificarDeclaracionVariable($1.sval);}
+	        | iteracion
+	        | llamadometodo
 	        ;
+
 seleccion: IF '(' condicion ')' bloque END_IF {System.out.println("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia if");}
 	   | IF '(' condicion ')' bloque ELSE bloque END_IF {System.out.println("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia if else");}
+	   
 	   ;
+
+iteracion:  FOR '(' asignacion condicion ';' expresion ')' bloque ';' {System.out.println("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia for");}
+		;
+
+llamadometodo:  ID '.' ID '(' ')' ';' {System.out.println("Linea - "+ (aLexico.getContadorFila()+1)+" - LLamado a metodo de objeto.");}
+		;
+
+impresion: PRINT '(' CADENA ')' ';' {System.out.println("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia print");}
+		;
+
+asignacion: identificador ASIGN expresion ';'{System.out.println("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia asignacion de variable.");}
+	     ;
 
 condicion: expresion MAYOR_IGUAL expresion
 	     | expresion MENOR_IGUAL expresion
-     	     | expresion '>' expresion
+     	 | expresion '>' expresion
 	     | expresion '<' expresion
 	     | expresion IGUAL expresion
 	     | expresion DISTINTO expresion
@@ -79,10 +86,6 @@ condicion: expresion MAYOR_IGUAL expresion
 bloque: sentencia_ej
 	| BEGIN sentencia_ej sentencias_ejecutables END
 	;
-
-asignacion: identificador ASIGN expresion {System.out.println("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia asignacion de variable.");
-				verificarDeclaracionVariable($1.sval);}
-	     ;
 
 expresion: expresion '+' termino
 	    | expresion '-' termino
@@ -98,16 +101,15 @@ factor: identificador
 		| error
         ;
 
-identificador: ID {verificarDeclaracionVariable($1.sval);}
-			  |ID '.' ID {verificarDeclaracionVariable($1.sval);
-				    verificarDeclaracionVariable($3.sval);} ;
+identificador: ID
+			  |ID '.' ID
+				;
 
 cte : CTE { if(!aLexico.verificarRango($1.sval)){
 	    	yyerror("Error : constante entera fuera de rango.");}}
     | '-' CTE {aLexico.actualizarTablaSimbolos($2.sval);}
 	;
 %%
-	ArrayList<String> variables = new ArrayList<String>();
 	AnalizadorLexico aLexico=new AnalizadorLexico();
 	ArrayList<String> errores = new ArrayList<String>();
 
@@ -128,26 +130,6 @@ cte : CTE { if(!aLexico.verificarRango($1.sval)){
 		erroresTotales.add("Errores sintactico:");
 		erroresTotales.addAll(errores);
 		return erroresTotales;
-	}
-
-	public void agregarTipoVariables(String tipo){
-		for(String s: variables){
-			aLexico.agregarAtributoLexema(s,"Tipo",tipo);
-		}
-	}
-
-	public void verificarDeclaracionVariable(String id){
-		HashMap<String, HashMap<String, Object>> tablaSimbolos = aLexico.getTablaSimbolos();
-		if(!tablaSimbolos.get(id).containsKey("Declarada")){
-			errores.add("Numero de linea: "+ (aLexico.getContadorFila()+1) +" - Error - Uso de variable no declarada.");
-		}
-	}
-
-	public void verificarDeclaracionClase(String id){
-		HashMap<String, HashMap<String, Object>> tablaSimbolos = aLexico.getTablaSimbolos();
-		if(!tablaSimbolos.get(id).containsKey("Tipo") || !tablaSimbolos.get(id).get("Tipo").toString().equals("clase")){
-			errores.add("Numero de linea: "+ (aLexico.getContadorFila()+1) +" - Error - Tipo de variable no declarado.");
-		}
 	}
 
 	public static void main(String args[])

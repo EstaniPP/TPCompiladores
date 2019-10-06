@@ -149,6 +149,8 @@ public class AnalizadorLexico {
 		tablaSimbolos.get("int").put("Reservada", true);
 		tablaSimbolos.put("begin", new HashMap<String, Object>());
 		tablaSimbolos.get("begin").put("Reservada", true);
+		tablaSimbolos.put("void", new HashMap<String, Object>());
+		tablaSimbolos.get("void").put("Reservada", true);
 		tablaSimbolos.put("end", new HashMap<String, Object>());
 		tablaSimbolos.get("end").put("Reservada", true);
 		tablaSimbolos.put("float", new HashMap<String, Object>());
