@@ -4,7 +4,7 @@
 	import java.util.HashMap;
 %}
 
-%token ID CTE IF ELSE END_IF PRINT INT BEGIN END FLOAT FOR CLASS EXTENDS CADENA ERROR VOID MAYOR_IGUAL MENOR_IGUAL IGUAL DISTINTO ASIGN
+%token ID CTE IF ELSE END_IF PRINT INT BEGIN END FLOAT FOR CLASS EXTENDS CADENA ERROR VOID MAYOR_IGUAL MENOR_IGUAL IGUAL DISTINTO ASIGN ERROR
 
 
 %%
@@ -56,6 +56,7 @@ sentencia_ej: asignacion
 	        | seleccion
 	        | iteracion
 	        | llamadometodo
+			| error ';' {yyerror("ERROR DE SENTENCIA");}
 	        ;
 
 seleccion: IF '(' condicion ')' bloque END_IF {System.out.println("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia if");}
@@ -64,15 +65,20 @@ seleccion: IF '(' condicion ')' bloque END_IF {System.out.println("Linea - "+ (a
 	   ;
 
 iteracion:  FOR '(' asignacion condicion ';' expresion ')' bloque ';' {System.out.println("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia for");}
+		   |FOR '(' error ')' bloque ';'{yyerror("Error en la definicion del for");}
 		;
 
 llamadometodo:  ID '.' ID '(' ')' ';' {System.out.println("Linea - "+ (aLexico.getContadorFila()+1)+" - LLamado a metodo de objeto.");}
+			   |ID '.' ID error ';'{yyerror("Error en la invocacion a metodo");}
 		;
 
 impresion: PRINT '(' CADENA ')' ';' {System.out.println("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia print");}
+		  |PRINT error ';'{yyerror("Error en la impresion");}
 		;
 
 asignacion: identificador ASIGN expresion ';'{System.out.println("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia asignacion de variable.");}
+			|identificador ASIGN error ';'{yyerror("Error en la asignacion lado derecho");}
+			|error ASIGN expresion ';'{yyerror("Error en la asignacion lado izquierdo");}
 	     ;
 
 condicion: expresion MAYOR_IGUAL expresion
@@ -98,7 +104,7 @@ termino: termino '*' factor
 
 factor: identificador
 		| cte 
-		| error
+		| ERROR
         ;
 
 identificador: ID

@@ -90,7 +90,7 @@ public class AnalizadorLexico {
 		codigosTokens.put("class", 268);
 		codigosTokens.put("extends", 269);
 		codigosTokens.put("CADENA", 270);
-		codigosTokens.put("ERROR", 256);
+		codigosTokens.put("ERROR", 271);
 		codigosTokens.put("void", 272);
 		codigosTokens.put(">=", 273);
 		codigosTokens.put("<=", 274);
