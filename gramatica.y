@@ -61,7 +61,7 @@ sentencia_ej: asignacion
 
 seleccion: IF '(' condicion ')' bloque END_IF {System.out.println("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia if");}
 	   | IF '(' condicion ')' bloque ELSE bloque END_IF {System.out.println("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia if else");}
-	   
+	   | IF '(' error ')' bloque END_IF {yyerror("Error en la definicion del if");}
 	   ;
 
 iteracion:  FOR '(' asignacion condicion ';' expresion ')' bloque ';' {System.out.println("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia for");}
