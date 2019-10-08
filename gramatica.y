@@ -23,6 +23,13 @@ declaraciones: declaracion_clase
 
 declaracion_clase: CLASS ID BEGIN declaracion_sentencia_clase END {System.out.println("Linea - "+ (aLexico.getContadorFila()+1)+" - Declaracion de clase.");}
 		    	  |CLASS ID EXTENDS lista_variables BEGIN declaracion_sentencia_clase  END {System.out.println("Linea - "+ (aLexico.getContadorFila()+1)+" - Declaracion de clase con herencia multiple.");}
+	  			  |CLASS error EXTENDS lista_variables BEGIN declaracion_sentencia_clase  END {yyerror("Error en la definicion de la clase: falta nombre de clase");}
+	  			  |CLASS error BEGIN declaracion_sentencia_clase  END {yyerror("Error en la definicion de la clase: falta nombre de clase");}
+	  			  |CLASS ID error declaracion_sentencia_clase  END {yyerror("Error en la definicion de la clase: falta begin de clase");}
+	  			  |CLASS ID EXTENDS lista_variables error declaracion_sentencia_clase  END {yyerror("Error en la definicion de la clase: falta begin de clase");}
+	  			  |CLASS ID EXTENDS error BEGIN declaracion_sentencia_clase  END {yyerror("Error en la definicion de la clase: falta nombre de clase extendidas");}
+	  			  |CLASS ID error lista_variables BEGIN declaracion_sentencia_clase  END {yyerror("Error en la definicion de la clase: falta palabra reservada extends");}
+					
 					
 		;
 
@@ -33,6 +40,11 @@ declaracion_sentencia_clase: declaracion_sentencia
 				;
 
 declaracion_metodo: VOID ID '(' ')' BEGIN sentencias_ejecutables END {System.out.println("Linea - "+ (aLexico.getContadorFila()+1)+" - Declaracion de metodo.");}
+	  			  | VOID error '(' ')' BEGIN sentencias_ejecutables END {yyerror("Error en la definicion del metodo: falta nombre de metodo");}
+	  			  | VOID ID '(' error ')' BEGIN sentencias_ejecutables END {yyerror("Error en la definicion del metodo: contiene parametros");}
+	  			  | VOID ID error ')' BEGIN sentencias_ejecutables END {yyerror("Error en la definicion del metodo: falta parentesis (");}
+	  			  | VOID ID '(' error BEGIN sentencias_ejecutables END {yyerror("Error en la definicion del metodo: falta parentesis )");}
+	  			  | VOID ID '(' ')' error sentencias_ejecutables END {yyerror("Error en la definicion del metodo: falta begin");}
 		         ;
 
 declaracion_sentencia: tipo lista_variables ';' {System.out.println("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia declarativa");}
@@ -62,14 +74,19 @@ sentencia_ej: asignacion
 seleccion: IF '(' condicion ')' bloque END_IF {System.out.println("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia if");}
 	   | IF '(' condicion ')' bloque ELSE bloque END_IF {System.out.println("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia if else");}
 	   | IF '(' error ')' bloque END_IF {yyerror("Error en la definicion del if");}
+	   | IF '(' error bloque END_IF {yyerror("Error en la definicion del if falta )");}
+	   | IF error ')' bloque END_IF {yyerror("Error en la definicion del if falta (");}
 	   ;
 
 iteracion:  FOR '(' asignacion condicion ';' expresion ')' bloque ';' {System.out.println("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia for");}
 		   |FOR '(' error ')' bloque ';'{yyerror("Error en la definicion del for");}
+		   |FOR error ')' bloque ';'{yyerror("Error en la definicion del for falta (");}
+		   |FOR '(' error bloque ';'{yyerror("Error en la definicion del for falta )");}
 		;
 
 llamadometodo:  ID '.' ID '(' ')' ';' {System.out.println("Linea - "+ (aLexico.getContadorFila()+1)+" - LLamado a metodo de objeto.");}
 			   |ID '.' ID error ';'{yyerror("Error en la invocacion a metodo");}
+			   |ID '.' error '(' ')' ';'{yyerror("Error en la invocacion a metodo - metodo vacio");}
 		;
 
 impresion: PRINT '(' CADENA ')' ';' {System.out.println("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia print");}
@@ -90,7 +107,7 @@ condicion: expresion MAYOR_IGUAL expresion
 	     ;
 
 bloque: sentencia_ej
-	| BEGIN sentencia_ej sentencias_ejecutables END
+	| BEGIN sentencias_ejecutables END
 	;
 
 expresion: expresion '+' termino
