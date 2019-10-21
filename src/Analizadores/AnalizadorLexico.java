@@ -289,9 +289,9 @@ public class AnalizadorLexico {
 	public String getDatosTablaSimbolos() {
 		StringBuilder texto =  new StringBuilder();
 		for(String s : tablaSimbolos.keySet()) {
-			texto.append(s+":\n");
+			texto.append(s+":\r\n");
 			for(String prop : tablaSimbolos.get(s).keySet()) {
-				texto.append("    "+prop+": "+tablaSimbolos.get(s).get(prop).toString()+"\n");
+				texto.append("    "+prop+": "+tablaSimbolos.get(s).get(prop).toString()+"\r\n");
 			}
 		}
 		return texto.toString();

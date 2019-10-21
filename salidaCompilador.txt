@@ -1,0 +1,10 @@
+Estructuras reconocidas: Linea - 1 - Sentencia declarativa 
+Linea - 4 - Sentencia declarativa 
+Linea - 7 - Sentencia asignacion de variable. 
+Linea - 8 - Declaracion de metodo. 
+Linea - 9 - Declaracion de clase. 
+Linea - 10 - Sentencia declarativa 
+Linea - 12 - LLamado a metodo de objeto. 
+Linea - 13 - Programa con sentencias ejecutables y declaraciones. 
+Linea - 13 - Programa aceptado. 
+Errores lexicos:Errores sintactico:
