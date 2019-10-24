@@ -66,11 +66,12 @@ declaracion_metodo: VOID ID '(' ')' BEGIN sentencias_ejecutables END {salida.add
 
 declaracion_sentencia: tipo lista_variables ';' {salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia declarativa ");
 												agregarTipoVariables(tipo);
+
 												}
 		;
 
-tipo: INT {tipo = "Int";}
-      | FLOAT {tipo = "Float";}
+tipo: INT {tipo = "int";}
+      | FLOAT {tipo = "float";}
       | ID {tipo = $1.sval;
 	  		verificarDeclaracionClase($1.sval);}
       ;
@@ -124,7 +125,8 @@ impresion: PRINT '(' CADENA ')' ';' {salida.add("Linea - "+ (aLexico.getContador
 		  |PRINT error ';'{yyerror("Error en la impresion");}
 		;
 
-asignacion: identificador ASIGN expresion ';'{salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia asignacion de variable. ");}
+asignacion: identificador ASIGN expresion ';'{salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia asignacion de variable. ");
+											  insertarNoTerminal("asignacion",crearTerceto(":=",$1.sval,noTerminalTercetos.get("expresion")));}
 			|identificador ASIGN error ';'{yyerror("Error en la asignacion lado derecho");}
 			|error ASIGN expresion ';'{yyerror("Error en la asignacion lado izquierdo");}
 	     ;
@@ -141,28 +143,30 @@ bloque: sentencia_ej
 	| BEGIN sentencias_ejecutables END
 	;
 
-expresion: expresion '+' termino
-	    | expresion '-' termino
-	    | termino
+expresion: expresion '+' termino {insertarNoTerminal("expresion",crearTerceto("+",noTerminalTercetos.get("expresion"),noTerminalTercetos.get("termino")));}
+	    | expresion '-' termino {insertarNoTerminal("expresion",crearTerceto("-",noTerminalTercetos.get("expresion"),noTerminalTercetos.get("termino")));}
+	    | termino {insertarNoTerminal("expresion",noTerminalTercetos.get("termino"));}
 	    ;
-termino: termino '*' factor
-	| termino '/' factor
-	| factor
+termino: termino '*' factor {insertarNoTerminal("termino",crearTerceto("*",noTerminalTercetos.get("termino"),noTerminalTercetos.get("factor")));}
+	| termino '/' factor {insertarNoTerminal("termino",crearTerceto("/",noTerminalTercetos.get("termino"),noTerminalTercetos.get("factor")));}
+	| factor {insertarNoTerminal("termino",noTerminalTercetos.get("factor"));}
 	;
 
-factor: identificador
-		| cte 
+factor: identificador {insertarNoTerminal("factor",$1.sval);}
+		| cte {insertarNoTerminal("factor",$1.sval);}
 		| ERROR
         ;
 
 identificador: ID {verificarDeclaracionVariable($1.sval);}
 			  |ID '.' ID 
 				    {verificarDeclaracionVariable($1.sval);
-					verificarDeclaracionAtributo($1.sval,$3.sval);} ;
+					verificarDeclaracionAtributo($1.sval,$3.sval);
+					$$ = new ParserVal($1.sval + "." + $3.sval);} ;
 				;
 
 cte : CTE { if(!aLexico.verificarRango($1.sval)){
-	    	yyerror("Error : constante entera fuera de rango.");}}
+	    	yyerror("Error : constante entera fuera de rango.");}else{
+			}}
     | '-' CTE {aLexico.actualizarTablaSimbolos($2.sval);}
 	;
 %%
@@ -174,7 +178,35 @@ cte : CTE { if(!aLexico.verificarRango($1.sval)){
 	ArrayList<String> variablesPorUso = new ArrayList<String>();
 	ArrayList<String> metodosPorClase = new ArrayList<String>();
 	ArrayList<String> listaHerencia = new ArrayList<String>();
+	ArrayList<Terceto> tercetos = new ArrayList<Terceto>();
 	String tipo, ambitoActual;
+	HashMap<String,String> noTerminalTercetos = new HashMap<String,String>();
+
+	public String getTipo(String elemento){
+		if(elemento.charAt(0) == '[' && elemento.charAt(elemento.length()-1) == ']'){
+			elemento = elemento.substring(1,elemento.length()-1);
+			return tercetos.get(Integer.parseInt(elemento)).tipo;
+		}else{
+			return (String) aLexico.getTablaSimbolos().get(elemento).get("Tipo");
+		}
+	}
+	public void insertarNoTerminal(String noTerminal, String value){
+		if(aLexico.getErrores().size() == 0 && errores.size() == 0){
+			noTerminalTercetos.put(noTerminal,value);
+		}
+	}
+
+	public String crearTerceto(String operador,String operando1,String operando2){
+		if(getTipo(operando1) != getTipo(operando2)){
+			yyerror("Incopatibilidad de tipos");
+		}
+		if(aLexico.getErrores().size() == 0 && errores.size() == 0){
+			tercetos.add(new Terceto(operador,operando1,operando2,getTipo(operando1)));
+			return new String("["+Integer.toString(tercetos.size()-1)+"]");
+		}else{
+			return null;
+		}
+	}
 
 	int yylex(){
 		int token = aLexico.yylex();
@@ -195,10 +227,20 @@ cte : CTE { if(!aLexico.verificarRango($1.sval)){
 		erroresTotales.addAll(errores);
 		return erroresTotales;
 	}
-
+ 	public void crearObjetoTablaSimbolos(String tipo){
+		ArrayList<String> atributosClase = (ArrayList<String>) aLexico.getTablaSimbolos().get(tipo).get("VariablesClase");
+		for(String s : variables){
+			for(String atributo : atributosClase){
+				aLexico.getTablaSimbolos().put(s+"."+atributo,new HashMap<String,Object>(aLexico.getTablaSimbolos().get(atributo)));
+			}
+		}
+	}
 	public void agregarTipoVariables(String tipo){
 		for(String s: variables){
 			aLexico.agregarAtributoLexema(s,"Tipo",tipo);
+		}
+		if(!tipo.equals("int") && !tipo.equals("float")){
+			crearObjetoTablaSimbolos(tipo);
 		}
 		variables.clear();
 	}
@@ -314,4 +356,5 @@ cte : CTE { if(!aLexico.verificarRango($1.sval)){
 		Parser par = new Parser(false);
 		System.out.println(par.yyparse());
 		par.saveFile();
+		System.out.println(par.tercetos.toString());
 	}
