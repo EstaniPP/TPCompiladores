@@ -53,9 +53,10 @@ declaracion_sentencia_clase: declaracion_sentencia
 				| declaracion_metodo declaracion_sentencia_clase
 				;
 
-declaracion_metodo: VOID ID '(' ')' BEGIN sentencias_ejecutables END {salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Declaracion de metodo. ");
+declaracion_metodo: VOID ID '(' ')' {crearTerceto("metodo",$2.sval,null,null);} BEGIN sentencias_ejecutables END {salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Declaracion de metodo. ");
 																	 aLexico.agregarAtributoLexema($2.sval,"Uso","nombreMetodo");
 																	 metodosPorClase.add($2.sval);
+																	 crearTerceto("termina_metodo",null,null,null);
 																	 }
 	  			  | VOID error '(' ')' BEGIN sentencias_ejecutables END {yyerror("Error en la definicion del metodo: falta nombre de metodo");}
 	  			  | VOID ID '(' error ')' BEGIN sentencias_ejecutables END {yyerror("Error en la definicion del metodo: contiene parametros");}
@@ -98,8 +99,8 @@ sentencia_ej: asignacion
 			| error ';' {yyerror("Error de sentencia");}
 	        ;
 
-seleccion: IF '(' condicion ')' bloque END_IF {salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia if ");}
-	   | IF '(' condicion ')' bloque ELSE bloque END_IF {salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia if else ");}
+seleccion: IF '(' condicion ')' bloque END_IF {desapilarSalto(tercetos.size()); salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia if ");}
+	   | IF '(' condicion ')' bloque ELSE {desapilarSalto(tercetos.size() + 1); apilarSalto(crearTerceto("BI",null,null,null));} bloque END_IF {desapilarSalto(tercetos.size()); salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia if else ");}
 	   | IF '(' error ')' bloque END_IF {yyerror("Error en la definicion del if");}
 	   | IF '(' error bloque END_IF {yyerror("Error en la definicion del if falta )");}
 	   | IF error ')' bloque END_IF {yyerror("Error en la definicion del if falta (");}
@@ -108,7 +109,9 @@ seleccion: IF '(' condicion ')' bloque END_IF {salida.add("Linea - "+ (aLexico.g
 	   | IF error ')' bloque ELSE bloque END_IF {yyerror("Error en la definicion del if falta (");}
 	   ;
 
-iteracion:  FOR '(' asignacion expresion ';' expresion ')' bloque ';' {salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia for ");}
+iteracion:  FOR '(' asignacion factor {insertarNoTerminal("condicion",crearTercetoTipo("<",tercetos.get(Integer.parseInt((noTerminalTercetos.get("asignacion")).substring(1,(noTerminalTercetos.get("asignacion")).length()-1))).operando1,noTerminalTercetos.get("factor"),"boolean")); apilarSalto(crearTerceto("BF",noTerminalTercetos.get("condicion"),null,null));} 
+				';' factor {apilarExpresionFor(tercetos.get(Integer.parseInt((noTerminalTercetos.get("asignacion")).substring(1,(noTerminalTercetos.get("asignacion")).length()-1))).operando1,noTerminalTercetos.get("factor"));} ')'
+				 bloque ';' {desapilarExpresionFor(); crearTerceto("BI",null,new String("[" + (pilaSaltos.get(pilaSaltos.size()-1)-1) + "]"),null); desapilarSalto(tercetos.size()); salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia for ");}
 		   |FOR '(' error ')' bloque ';'{yyerror("Error en la definicion del for");}
 		   |FOR error ')' bloque ';'{yyerror("Error en la definicion del for falta (");}
 		   |FOR '(' error bloque ';'{yyerror("Error en la definicion del for falta )");}
@@ -116,7 +119,9 @@ iteracion:  FOR '(' asignacion expresion ';' expresion ')' bloque ';' {salida.ad
 
 llamadometodo:  ID '.' ID '(' ')' ';' {salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - LLamado a metodo de objeto. ");
 									   verificarDeclaracionVariable($1.sval);
-									   verificarDeclaracionMetodo($1.sval,$3.sval);}
+									   verificarDeclaracionMetodo($1.sval,$3.sval);
+									   crearTerceto("call",$3.sval,$1.sval,null);
+									   }
 			   |ID '.' ID error ';'{yyerror("Error en la invocacion a metodo");}
 			   |ID '.' error '(' ')' ';'{yyerror("Error en la invocacion a metodo - metodo vacio");}
 		;
@@ -126,29 +131,35 @@ impresion: PRINT '(' CADENA ')' ';' {salida.add("Linea - "+ (aLexico.getContador
 		;
 
 asignacion: identificador ASIGN expresion ';'{salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia asignacion de variable. ");
-											  insertarNoTerminal("asignacion",crearTerceto(":=",$1.sval,noTerminalTercetos.get("expresion")));}
+											  insertarNoTerminal("asignacion",crearTercetoTipo(":=",$1.sval,noTerminalTercetos.get("expresion"),getTipo(noTerminalTercetos.get($1.sval))));}
 			|identificador ASIGN error ';'{yyerror("Error en la asignacion lado derecho");}
 			|error ASIGN expresion ';'{yyerror("Error en la asignacion lado izquierdo");}
 	     ;
 
-condicion: expresion MAYOR_IGUAL expresion
-	     | expresion MENOR_IGUAL expresion
-     	 | expresion '>' expresion
-	     | expresion '<' expresion
-	     | expresion IGUAL expresion
-	     | expresion DISTINTO expresion
+condicion: expresion {insertarNoTerminal("li_condicion",noTerminalTercetos.get("expresion"));} MAYOR_IGUAL expresion {insertarNoTerminal("condicion",crearTercetoTipo(">=",noTerminalTercetos.get("li_condicion"),noTerminalTercetos.get("expresion"),"boolean"));
+					  apilarSalto(crearTerceto("BF",noTerminalTercetos.get("condicion"),null,null));}
+	     | expresion {insertarNoTerminal("li_condicion",noTerminalTercetos.get("expresion"));} MENOR_IGUAL expresion {insertarNoTerminal("condicion",crearTercetoTipo("<=",noTerminalTercetos.get("li_condicion"),noTerminalTercetos.get("expresion"),"boolean"));
+		 			  apilarSalto(crearTerceto("BF",noTerminalTercetos.get("condicion"),null,null));}
+     	 | expresion {insertarNoTerminal("li_condicion",noTerminalTercetos.get("expresion"));} '>' expresion {insertarNoTerminal("condicion",crearTercetoTipo(">",noTerminalTercetos.get("li_condicion"),noTerminalTercetos.get("expresion"),"boolean"));
+		  			  apilarSalto(crearTerceto("BF",noTerminalTercetos.get("condicion"),null,null));}
+	     | expresion {insertarNoTerminal("li_condicion",noTerminalTercetos.get("expresion"));} '<' expresion {insertarNoTerminal("condicion",crearTercetoTipo("<",noTerminalTercetos.get("li_condicion"),noTerminalTercetos.get("expresion"),"boolean"));
+		 			  apilarSalto(crearTerceto("BF",noTerminalTercetos.get("condicion"),null,null));}
+	     | expresion {insertarNoTerminal("li_condicion",noTerminalTercetos.get("expresion"));} IGUAL expresion {insertarNoTerminal("condicion",crearTercetoTipo("==",noTerminalTercetos.get("li_condicion"),noTerminalTercetos.get("expresion"),"boolean"));
+		 			  apilarSalto(crearTerceto("BF",noTerminalTercetos.get("condicion"),null,null));}
+	     | expresion {insertarNoTerminal("li_condicion",noTerminalTercetos.get("expresion"));} DISTINTO expresion {insertarNoTerminal("condicion",crearTercetoTipo("<>",noTerminalTercetos.get("li_condicion"),noTerminalTercetos.get("expresion"),"boolean"));
+		 			  apilarSalto(crearTerceto("BF",noTerminalTercetos.get("condicion"),null,null));}
 	     ;
 
 bloque: sentencia_ej
 	| BEGIN sentencias_ejecutables END
 	;
 
-expresion: expresion '+' termino {insertarNoTerminal("expresion",crearTerceto("+",noTerminalTercetos.get("expresion"),noTerminalTercetos.get("termino")));}
-	    | expresion '-' termino {insertarNoTerminal("expresion",crearTerceto("-",noTerminalTercetos.get("expresion"),noTerminalTercetos.get("termino")));}
+expresion: expresion '+' termino {insertarNoTerminal("expresion",crearTercetoTipo("+",noTerminalTercetos.get("expresion"),noTerminalTercetos.get("termino"),getTipo(noTerminalTercetos.get("termino"))));}
+	    | expresion '-' termino {insertarNoTerminal("expresion",crearTercetoTipo("-",noTerminalTercetos.get("expresion"),noTerminalTercetos.get("termino"),getTipo(noTerminalTercetos.get("termino"))));}
 	    | termino {insertarNoTerminal("expresion",noTerminalTercetos.get("termino"));}
 	    ;
-termino: termino '*' factor {insertarNoTerminal("termino",crearTerceto("*",noTerminalTercetos.get("termino"),noTerminalTercetos.get("factor")));}
-	| termino '/' factor {insertarNoTerminal("termino",crearTerceto("/",noTerminalTercetos.get("termino"),noTerminalTercetos.get("factor")));}
+termino: termino '*' factor {insertarNoTerminal("termino",crearTercetoTipo("*",noTerminalTercetos.get("termino"),noTerminalTercetos.get("factor"),getTipo(noTerminalTercetos.get("termino"))));}
+	| termino '/' factor {insertarNoTerminal("termino",crearTercetoTipo("/",noTerminalTercetos.get("termino"),noTerminalTercetos.get("factor"),getTipo(noTerminalTercetos.get("termino"))));}
 	| factor {insertarNoTerminal("termino",noTerminalTercetos.get("factor"));}
 	;
 
@@ -161,13 +172,14 @@ identificador: ID {verificarDeclaracionVariable($1.sval);}
 			  |ID '.' ID 
 				    {verificarDeclaracionVariable($1.sval);
 					verificarDeclaracionAtributo($1.sval,$3.sval);
-					$$ = new ParserVal($1.sval + "." + $3.sval);} ;
+					$$ = new ParserVal($1.sval + "@" + $3.sval);} ;
 				;
 
 cte : CTE { if(!aLexico.verificarRango($1.sval)){
 	    	yyerror("Error : constante entera fuera de rango.");}else{
 			}}
-    | '-' CTE {aLexico.actualizarTablaSimbolos($2.sval);}
+    | '-' CTE {aLexico.actualizarTablaSimbolos($2.sval);
+				$$ = new ParserVal("-" + $2.sval);}
 	;
 %%
 	AnalizadorLexico aLexico=new AnalizadorLexico();
@@ -179,10 +191,16 @@ cte : CTE { if(!aLexico.verificarRango($1.sval)){
 	ArrayList<String> metodosPorClase = new ArrayList<String>();
 	ArrayList<String> listaHerencia = new ArrayList<String>();
 	ArrayList<Terceto> tercetos = new ArrayList<Terceto>();
+	ArrayList<Integer> pilaSaltos = new ArrayList<Integer>();
+	ArrayList<Terceto> pilaExpresionFor = new ArrayList<Terceto>();
+	
 	String tipo, ambitoActual;
 	HashMap<String,String> noTerminalTercetos = new HashMap<String,String>();
 
 	public String getTipo(String elemento){
+		if(elemento == null) {
+			return null;
+		}
 		if(elemento.charAt(0) == '[' && elemento.charAt(elemento.length()-1) == ']'){
 			elemento = elemento.substring(1,elemento.length()-1);
 			return tercetos.get(Integer.parseInt(elemento)).tipo;
@@ -195,19 +213,56 @@ cte : CTE { if(!aLexico.verificarRango($1.sval)){
 			noTerminalTercetos.put(noTerminal,value);
 		}
 	}
-
-	public String crearTerceto(String operador,String operando1,String operando2){
-		if(getTipo(operando1) != getTipo(operando2)){
-			yyerror("Incopatibilidad de tipos");
-		}
+	public String crearTerceto(String operador,String operando1,String operando2,String tipo) {
 		if(aLexico.getErrores().size() == 0 && errores.size() == 0){
-			tercetos.add(new Terceto(operador,operando1,operando2,getTipo(operando1)));
+			tercetos.add(new Terceto(operador,operando1,operando2,tipo));
 			return new String("["+Integer.toString(tercetos.size()-1)+"]");
 		}else{
 			return null;
 		}
 	}
 
+	public boolean checkeoTipos(String operando1,String operando2){
+		if(getTipo(operando1) != getTipo(operando2)){
+				yyerror("Incopatibilidad de tipos");
+				return false;
+		}
+		return true;
+	}
+
+	public void apilarSalto(String numTerceto){
+			pilaSaltos.add(Integer.parseInt(numTerceto.substring(1,numTerceto.length()-1)));
+	}
+
+
+	public void apilarExpresionFor(String operando1, String operando2){
+		if(getTipo(operando2)=="int" && getTipo(operando1)== "int"){
+			pilaExpresionFor.add(new Terceto(":=",operando1,null,"int"));
+			pilaExpresionFor.add(new Terceto("+",operando1,operando2,"int"));
+		}else{
+			yyerror("El tipo de los operandos del for deben ser de tipo int");
+		}
+	}
+
+	public void desapilarExpresionFor(){
+		tercetos.add(pilaExpresionFor.remove(pilaExpresionFor.size()-1));
+		tercetos.add(pilaExpresionFor.remove(pilaExpresionFor.size()-1));
+		tercetos.get(tercetos.size()-1).operando2 = new String("[" + (tercetos.size()-2)+ "]");
+	}
+
+	public void desapilarSalto(Integer posicion){
+			Integer pos = pilaSaltos.get(pilaSaltos.size()-1);
+			tercetos.get(pos).operando2 = new String("[" + posicion + "]"); 
+			pilaSaltos.remove(pilaSaltos.size()-1);
+	}
+
+	public String crearTercetoTipo(String operador,String operando1,String operando2,String tipo){
+		if(checkeoTipos(operando1,operando2)){
+			crearTerceto(operador, operando1, operando2, tipo);
+			return new String("["+Integer.toString(tercetos.size()-1)+"]");
+		}
+		return null;
+	}
 	int yylex(){
 		int token = aLexico.yylex();
 		if(token == 257 || token == 258 || token  == 270) yylval = aLexico.getyylval();
@@ -231,7 +286,7 @@ cte : CTE { if(!aLexico.verificarRango($1.sval)){
 		ArrayList<String> atributosClase = (ArrayList<String>) aLexico.getTablaSimbolos().get(tipo).get("VariablesClase");
 		for(String s : variables){
 			for(String atributo : atributosClase){
-				aLexico.getTablaSimbolos().put(s+"."+atributo,new HashMap<String,Object>(aLexico.getTablaSimbolos().get(atributo)));
+				aLexico.getTablaSimbolos().put(s+"@"+atributo,new HashMap<String,Object>(aLexico.getTablaSimbolos().get(atributo)));
 			}
 		}
 	}
@@ -357,4 +412,8 @@ cte : CTE { if(!aLexico.verificarRango($1.sval)){
 		System.out.println(par.yyparse());
 		par.saveFile();
 		System.out.println(par.tercetos.toString());
+		int i =0;
+		for(Terceto s : par.tercetos) {
+			System.out.println(i++ + s.toString());
+		}
 	}
