@@ -28,12 +28,14 @@ declaraciones: declaracion_clase {agregarUsoVariables("nombreAtributo");}
 			 ;
 
 declaracion_clase: CLASS ID {inicializarAtributos($2.sval);}BEGIN declaracion_sentencia_clase END {salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Declaracion de clase. ");
+																   verificarRedeclaracionClase($2.sval);
 																   aLexico.agregarAtributoLexema($2.sval,"Uso","nombreClase");
 																   agregarAtributoAClase($2.sval);
 																   metodosPorClase.clear();
 																   ambitoActual = null;}
 		    	  |CLASS ID EXTENDS lista_clases  {inicializarAtributos($2.sval); agregarAtributoHeredados($2.sval);} BEGIN declaracion_sentencia_clase  END {salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Declaracion de clase con herencia multiple. ");
-				  												   aLexico.agregarAtributoLexema($2.sval,"Uso","nombreClase");
+				  												   verificarRedeclaracionClase($2.sval);
+																   aLexico.agregarAtributoLexema($2.sval,"Uso","nombreClase");
 																   agregarAtributoAClase($2.sval);
 																   metodosPorClase.clear();
 																   ambitoActual = null;}
@@ -231,33 +233,41 @@ cte : CTE { if(!aLexico.verificarRango($1.sval)){
 	}
 
 	public void apilarSalto(String numTerceto){
+		if(aLexico.getErrores().size() == 0 && errores.size() == 0){
 			pilaSaltos.add(Integer.parseInt(numTerceto.substring(1,numTerceto.length()-1)));
+		}
 	}
 
 
 	public void apilarExpresionFor(String operando1, String operando2){
-		if(getTipo(operando2)=="int" && getTipo(operando1)== "int"){
-			pilaExpresionFor.add(new Terceto(":=",operando1,null,"int"));
-			pilaExpresionFor.add(new Terceto("+",operando1,operando2,"int"));
-		}else{
-			yyerror("El tipo de los operandos del for deben ser de tipo int");
+		if(aLexico.getErrores().size() == 0 && errores.size() == 0){
+			if(getTipo(operando2)=="int" && getTipo(operando1)== "int"){
+				pilaExpresionFor.add(new Terceto(":=",operando1,null,"int"));
+				pilaExpresionFor.add(new Terceto("+",operando1,operando2,"int"));
+			}else{
+				yyerror("El tipo de los operandos del for deben ser de tipo int");
+			}
 		}
 	}
 
 	public void desapilarExpresionFor(){
-		tercetos.add(pilaExpresionFor.remove(pilaExpresionFor.size()-1));
-		tercetos.add(pilaExpresionFor.remove(pilaExpresionFor.size()-1));
-		tercetos.get(tercetos.size()-1).operando2 = new String("[" + (tercetos.size()-2)+ "]");
+		if(aLexico.getErrores().size() == 0 && errores.size() == 0){
+			tercetos.add(pilaExpresionFor.remove(pilaExpresionFor.size()-1));
+			tercetos.add(pilaExpresionFor.remove(pilaExpresionFor.size()-1));
+			tercetos.get(tercetos.size()-1).operando2 = new String("[" + (tercetos.size()-2)+ "]");
+		}
 	}
 
 	public void desapilarSalto(Integer posicion){
+		if(aLexico.getErrores().size() == 0 && errores.size() == 0){
 			Integer pos = pilaSaltos.get(pilaSaltos.size()-1);
 			tercetos.get(pos).operando2 = new String("[" + posicion + "]"); 
 			pilaSaltos.remove(pilaSaltos.size()-1);
+		}
 	}
 
 	public String crearTercetoTipo(String operador,String operando1,String operando2,String tipo){
-		if(checkeoTipos(operando1,operando2)){
+		if(aLexico.getErrores().size() == 0 && errores.size() == 0 && checkeoTipos(operando1,operando2)){	
 			crearTerceto(operador, operando1, operando2, tipo);
 			return new String("["+Integer.toString(tercetos.size()-1)+"]");
 		}
@@ -292,7 +302,12 @@ cte : CTE { if(!aLexico.verificarRango($1.sval)){
 	}
 	public void agregarTipoVariables(String tipo){
 		for(String s: variables){
-			aLexico.agregarAtributoLexema(s,"Tipo",tipo);
+			HashMap<String, HashMap<String, Object>> tablaSimbolos = aLexico.getTablaSimbolos();
+			if((tablaSimbolos.get(s)).containsKey("Tipo")){
+				errores.add("Numero de linea: "+ (aLexico.getContadorFila()+1) +" - Error - La variable "+s+" ya fue declarada.");
+			}else{
+				aLexico.agregarAtributoLexema(s,"Tipo",tipo);	
+			}
 		}
 		if(!tipo.equals("int") && !tipo.equals("float")){
 			crearObjetoTablaSimbolos(tipo);
@@ -307,7 +322,12 @@ cte : CTE { if(!aLexico.verificarRango($1.sval)){
 
 	public void agregarUsoVariables(String uso){
 		for(String s: variablesPorUso){	
-			aLexico.agregarAtributoLexema(s,"Uso",uso);
+			HashMap<String, HashMap<String, Object>> tablaSimbolos = aLexico.getTablaSimbolos();
+			if((tablaSimbolos.get(s)).containsKey("Uso")){
+			}else{
+				aLexico.agregarAtributoLexema(s,"Uso",uso);	
+			}
+			
 		}
 		variablesPorUso.clear();
 	}
@@ -318,17 +338,26 @@ cte : CTE { if(!aLexico.verificarRango($1.sval)){
 		ambitoActual = clase;
 	}
 	public void agregarAtributoHeredados(String clase){
+		HashMap<String, HashMap<String, Object>> tablaSimbolos = aLexico.getTablaSimbolos();
 		for(String padre: listaHerencia){
+			if(!(tablaSimbolos.get(id).containsKey("Uso") && tablaSimbolos.get(id).get("Uso").equals("nombreClase"))){
+			errores.add("Numero de linea: "+ (aLexico.getContadorFila()+1) +" - Error - Clase extendida "+id+" no existente.");
+			}else{
 				((ArrayList<String>)aLexico.getTablaSimbolos().get(clase).get("VariablesClase")).addAll((ArrayList<String>)(aLexico.getTablaSimbolos().get(padre).get("VariablesClase")));
 				((ArrayList<String>)aLexico.getTablaSimbolos().get(clase).get("MetodosClase")).addAll((ArrayList<String>)(aLexico.getTablaSimbolos().get(padre).get("MetodosClase")));
+			}
 		}
 		listaHerencia.clear();
 	}
 	
 	public void verificarDeclaracionVariable(String id){
 		HashMap<String, HashMap<String, Object>> tablaSimbolos = aLexico.getTablaSimbolos();
-		if((!tablaSimbolos.get(id).containsKey("Uso") || !tablaSimbolos.get(id).get("Uso").equals("variable")) && !((ArrayList<String>)tablaSimbolos.get(ambitoActual).get("VariablesClase")).contains(id) && !variablesPorUso.contains(id)){
-			errores.add("Numero de linea: "+ (aLexico.getContadorFila()+1) +" - Error - Uso de variable no declarada.");
+		if(!(tablaSimbolos.get(id).containsKey("Uso"))){
+			if(!variablesPorUso.contains(id)) {
+				errores.add("Numero de linea: "+ (aLexico.getContadorFila()+1) +" - Error - Uso de variable "+id+" no declarada.");
+			}
+		}else if(!(tablaSimbolos.get(id).get("Uso").equals("variable") ||(ambitoActual!=null && ((ArrayList<String>)tablaSimbolos.get(ambitoActual).get("VariablesClase")).contains(id)) || variablesPorUso.contains(id))){
+			errores.add("Numero de linea: "+ (aLexico.getContadorFila()+1) +" - Error - La variable "+id+" no esta al alcance.");
 		}
 	}
 
@@ -351,6 +380,17 @@ cte : CTE { if(!aLexico.verificarRango($1.sval)){
 		if(!((ArrayList<String>)tablaSimbolos.get(tablaSimbolos.get(idClase).get("Tipo")).get("MetodosClase")).contains(metodo)){
 			errores.add("Numero de linea: "+ (aLexico.getContadorFila()+1) +" - Error - El objeto no tiene ese metodo.");
 		}
+	}
+
+	public void verificarRedeclaracionClase(String id){
+		HashMap<String, HashMap<String, Object>> tablaSimbolos = aLexico.getTablaSimbolos();
+		if(tablaSimbolos.get(id).containsKey("Uso")){
+			errores.add("Numero de linea: "+ (aLexico.getContadorFila()+1) +" - Error - Nombre de clase "+id +" ya declarado.");
+		}
+	}
+
+	public void verificarDeclaracionClaseExtendida(String id){
+
 	}
 
 	public void saveFile(){

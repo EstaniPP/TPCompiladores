@@ -502,7 +502,7 @@ final static String yyrule[] = {
 "cte : '-' CTE",
 };
 
-//#line 185 "compi/gramatica.y"
+//#line 187 "compi/gramatica.y"
 	AnalizadorLexico aLexico=new AnalizadorLexico();
 	ArrayList<String> errores = new ArrayList<String>();
 	ArrayList<String> salida = new ArrayList<String>();
@@ -552,33 +552,41 @@ final static String yyrule[] = {
 	}
 
 	public void apilarSalto(String numTerceto){
+		if(aLexico.getErrores().size() == 0 && errores.size() == 0){
 			pilaSaltos.add(Integer.parseInt(numTerceto.substring(1,numTerceto.length()-1)));
+		}
 	}
 
 
 	public void apilarExpresionFor(String operando1, String operando2){
-		if(getTipo(operando2)=="int" && getTipo(operando1)== "int"){
-			pilaExpresionFor.add(new Terceto(":=",operando1,null,"int"));
-			pilaExpresionFor.add(new Terceto("+",operando1,operando2,"int"));
-		}else{
-			yyerror("El tipo de los operandos del for deben ser de tipo int");
+		if(aLexico.getErrores().size() == 0 && errores.size() == 0){
+			if(getTipo(operando2)=="int" && getTipo(operando1)== "int"){
+				pilaExpresionFor.add(new Terceto(":=",operando1,null,"int"));
+				pilaExpresionFor.add(new Terceto("+",operando1,operando2,"int"));
+			}else{
+				yyerror("El tipo de los operandos del for deben ser de tipo int");
+			}
 		}
 	}
 
 	public void desapilarExpresionFor(){
-		tercetos.add(pilaExpresionFor.remove(pilaExpresionFor.size()-1));
-		tercetos.add(pilaExpresionFor.remove(pilaExpresionFor.size()-1));
-		tercetos.get(tercetos.size()-1).operando2 = new String("[" + (tercetos.size()-2)+ "]");
+		if(aLexico.getErrores().size() == 0 && errores.size() == 0){
+			tercetos.add(pilaExpresionFor.remove(pilaExpresionFor.size()-1));
+			tercetos.add(pilaExpresionFor.remove(pilaExpresionFor.size()-1));
+			tercetos.get(tercetos.size()-1).operando2 = new String("[" + (tercetos.size()-2)+ "]");
+		}
 	}
 
 	public void desapilarSalto(Integer posicion){
+		if(aLexico.getErrores().size() == 0 && errores.size() == 0){
 			Integer pos = pilaSaltos.get(pilaSaltos.size()-1);
 			tercetos.get(pos).operando2 = new String("[" + posicion + "]"); 
 			pilaSaltos.remove(pilaSaltos.size()-1);
+		}
 	}
 
 	public String crearTercetoTipo(String operador,String operando1,String operando2,String tipo){
-		if(checkeoTipos(operando1,operando2)){
+		if(aLexico.getErrores().size() == 0 && errores.size() == 0 && checkeoTipos(operando1,operando2)){	
 			crearTerceto(operador, operando1, operando2, tipo);
 			return new String("["+Integer.toString(tercetos.size()-1)+"]");
 		}
@@ -613,7 +621,12 @@ final static String yyrule[] = {
 	}
 	public void agregarTipoVariables(String tipo){
 		for(String s: variables){
-				aLexico.agregarAtributoLexema(s,"Tipo",tipo);
+			HashMap<String, HashMap<String, Object>> tablaSimbolos = aLexico.getTablaSimbolos();
+			if((tablaSimbolos.get(s)).containsKey("Tipo")){
+				errores.add("Numero de linea: "+ (aLexico.getContadorFila()+1) +" - Error - La variable "+s+" ya fue declarada.");
+			}else{
+				aLexico.agregarAtributoLexema(s,"Tipo",tipo);	
+			}
 		}
 		if(!tipo.equals("int") && !tipo.equals("float")){
 			crearObjetoTablaSimbolos(tipo);
@@ -628,7 +641,12 @@ final static String yyrule[] = {
 
 	public void agregarUsoVariables(String uso){
 		for(String s: variablesPorUso){	
-			aLexico.agregarAtributoLexema(s,"Uso",uso);
+			HashMap<String, HashMap<String, Object>> tablaSimbolos = aLexico.getTablaSimbolos();
+			if((tablaSimbolos.get(s)).containsKey("Uso")){
+			}else{
+				aLexico.agregarAtributoLexema(s,"Uso",uso);	
+			}
+			
 		}
 		variablesPorUso.clear();
 	}
@@ -639,17 +657,26 @@ final static String yyrule[] = {
 		ambitoActual = clase;
 	}
 	public void agregarAtributoHeredados(String clase){
+		HashMap<String, HashMap<String, Object>> tablaSimbolos = aLexico.getTablaSimbolos();
 		for(String padre: listaHerencia){
+			if(!(tablaSimbolos.get(padre).containsKey("Uso") && tablaSimbolos.get(padre).get("Uso").equals("nombreClase"))){
+			errores.add("Numero de linea: "+ (aLexico.getContadorFila()+1) +" - Error - Clase extendida "+padre+" no existente.");
+			}else{
 				((ArrayList<String>)aLexico.getTablaSimbolos().get(clase).get("VariablesClase")).addAll((ArrayList<String>)(aLexico.getTablaSimbolos().get(padre).get("VariablesClase")));
 				((ArrayList<String>)aLexico.getTablaSimbolos().get(clase).get("MetodosClase")).addAll((ArrayList<String>)(aLexico.getTablaSimbolos().get(padre).get("MetodosClase")));
+			}
 		}
 		listaHerencia.clear();
 	}
 	
 	public void verificarDeclaracionVariable(String id){
 		HashMap<String, HashMap<String, Object>> tablaSimbolos = aLexico.getTablaSimbolos();
-		if((!tablaSimbolos.get(id).containsKey("Uso") || !tablaSimbolos.get(id).get("Uso").equals("variable")) && !((ArrayList<String>)tablaSimbolos.get(ambitoActual).get("VariablesClase")).contains(id) && !variablesPorUso.contains(id)){
-			errores.add("Numero de linea: "+ (aLexico.getContadorFila()+1) +" - Error - Uso de variable no declarada.");
+		if(!(tablaSimbolos.get(id).containsKey("Uso"))){
+			if(!variablesPorUso.contains(id)) {
+				errores.add("Numero de linea: "+ (aLexico.getContadorFila()+1) +" - Error - Uso de variable "+id+" no declarada.");
+			}
+		}else if(!(tablaSimbolos.get(id).get("Uso").equals("variable") ||(ambitoActual!=null && ((ArrayList<String>)tablaSimbolos.get(ambitoActual).get("VariablesClase")).contains(id)) || variablesPorUso.contains(id))){
+			errores.add("Numero de linea: "+ (aLexico.getContadorFila()+1) +" - Error - La variable "+id+" no esta al alcance.");
 		}
 	}
 
@@ -672,6 +699,17 @@ final static String yyrule[] = {
 		if(!((ArrayList<String>)tablaSimbolos.get(tablaSimbolos.get(idClase).get("Tipo")).get("MetodosClase")).contains(metodo)){
 			errores.add("Numero de linea: "+ (aLexico.getContadorFila()+1) +" - Error - El objeto no tiene ese metodo.");
 		}
+	}
+
+	public void verificarRedeclaracionClase(String id){
+		HashMap<String, HashMap<String, Object>> tablaSimbolos = aLexico.getTablaSimbolos();
+		if(tablaSimbolos.get(id).containsKey("Uso")){
+			errores.add("Numero de linea: "+ (aLexico.getContadorFila()+1) +" - Error - Nombre de clase "+id +" ya declarado.");
+		}
+	}
+
+	public void verificarDeclaracionClaseExtendida(String id){
+
 	}
 
 	public void saveFile(){
@@ -738,7 +776,7 @@ final static String yyrule[] = {
 			System.out.println(i++ + s.toString());
 		}
 	}
-//#line 675 "Parser.java"
+//#line 708 "Parser.java"
 //###############################################################
 // method: yylexdebug : check lexer state
 //###############################################################
@@ -927,53 +965,55 @@ break;
 case 11:
 //#line 30 "compi/gramatica.y"
 {salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Declaracion de clase. ");
+																   verificarRedeclaracionClase(val_peek(4).sval);
 																   aLexico.agregarAtributoLexema(val_peek(4).sval,"Uso","nombreClase");
 																   agregarAtributoAClase(val_peek(4).sval);
 																   metodosPorClase.clear();
 																   ambitoActual = null;}
 break;
 case 12:
-//#line 35 "compi/gramatica.y"
+//#line 36 "compi/gramatica.y"
 {inicializarAtributos(val_peek(2).sval); agregarAtributoHeredados(val_peek(2).sval);}
 break;
 case 13:
-//#line 35 "compi/gramatica.y"
+//#line 36 "compi/gramatica.y"
 {salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Declaracion de clase con herencia multiple. ");
-				  												   aLexico.agregarAtributoLexema(val_peek(6).sval,"Uso","nombreClase");
+				  												   verificarRedeclaracionClase(val_peek(6).sval);
+																   aLexico.agregarAtributoLexema(val_peek(6).sval,"Uso","nombreClase");
 																   agregarAtributoAClase(val_peek(6).sval);
 																   metodosPorClase.clear();
 																   ambitoActual = null;}
 break;
 case 14:
-//#line 40 "compi/gramatica.y"
+//#line 42 "compi/gramatica.y"
 {yyerror("Error en la definicion de la clase: falta nombre de clase");}
 break;
 case 15:
-//#line 41 "compi/gramatica.y"
+//#line 43 "compi/gramatica.y"
 {yyerror("Error en la definicion de la clase: falta nombre de clase");}
 break;
 case 16:
-//#line 42 "compi/gramatica.y"
+//#line 44 "compi/gramatica.y"
 {yyerror("Error en la definicion de la clase: falta begin de clase");}
 break;
 case 17:
-//#line 43 "compi/gramatica.y"
+//#line 45 "compi/gramatica.y"
 {yyerror("Error en la definicion de la clase: falta begin de clase");}
 break;
 case 18:
-//#line 44 "compi/gramatica.y"
+//#line 46 "compi/gramatica.y"
 {yyerror("Error en la definicion de la clase: falta nombre de clase extendidas");}
 break;
 case 19:
-//#line 45 "compi/gramatica.y"
+//#line 47 "compi/gramatica.y"
 {yyerror("Error en la definicion de la clase: falta palabra reservada extends");}
 break;
 case 24:
-//#line 56 "compi/gramatica.y"
+//#line 58 "compi/gramatica.y"
 {crearTerceto("metodo",val_peek(2).sval,null,null);}
 break;
 case 25:
-//#line 56 "compi/gramatica.y"
+//#line 58 "compi/gramatica.y"
 {salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Declaracion de metodo. ");
 																	 aLexico.agregarAtributoLexema(val_peek(6).sval,"Uso","nombreMetodo");
 																	 metodosPorClase.add(val_peek(6).sval);
@@ -981,129 +1021,129 @@ case 25:
 																	 }
 break;
 case 26:
-//#line 61 "compi/gramatica.y"
+//#line 63 "compi/gramatica.y"
 {yyerror("Error en la definicion del metodo: falta nombre de metodo");}
 break;
 case 27:
-//#line 62 "compi/gramatica.y"
+//#line 64 "compi/gramatica.y"
 {yyerror("Error en la definicion del metodo: contiene parametros");}
 break;
 case 28:
-//#line 63 "compi/gramatica.y"
+//#line 65 "compi/gramatica.y"
 {yyerror("Error en la definicion del metodo: falta parentesis (");}
 break;
 case 29:
-//#line 64 "compi/gramatica.y"
+//#line 66 "compi/gramatica.y"
 {yyerror("Error en la definicion del metodo: falta parentesis )");}
 break;
 case 30:
-//#line 65 "compi/gramatica.y"
+//#line 67 "compi/gramatica.y"
 {yyerror("Error en la definicion del metodo: falta begin");}
 break;
 case 31:
-//#line 68 "compi/gramatica.y"
+//#line 70 "compi/gramatica.y"
 {salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia declarativa ");
 												agregarTipoVariables(tipo);
 
 												}
 break;
 case 32:
-//#line 74 "compi/gramatica.y"
+//#line 76 "compi/gramatica.y"
 {tipo = "int";}
 break;
 case 33:
-//#line 75 "compi/gramatica.y"
+//#line 77 "compi/gramatica.y"
 {tipo = "float";}
 break;
 case 34:
-//#line 76 "compi/gramatica.y"
+//#line 78 "compi/gramatica.y"
 {tipo = val_peek(0).sval;
 	  		verificarDeclaracionClase(val_peek(0).sval);}
 break;
 case 35:
-//#line 80 "compi/gramatica.y"
+//#line 82 "compi/gramatica.y"
 {variables.add(val_peek(0).sval);
 					 variablesPorUso.add(val_peek(0).sval);}
 break;
 case 36:
-//#line 82 "compi/gramatica.y"
+//#line 84 "compi/gramatica.y"
 {variables.add(val_peek(2).sval);
 								  variablesPorUso.add(val_peek(2).sval);}
 break;
 case 37:
-//#line 86 "compi/gramatica.y"
+//#line 88 "compi/gramatica.y"
 {listaHerencia.add(val_peek(0).sval);}
 break;
 case 38:
-//#line 87 "compi/gramatica.y"
+//#line 89 "compi/gramatica.y"
 {listaHerencia.add(val_peek(2).sval);}
 break;
 case 46:
-//#line 99 "compi/gramatica.y"
+//#line 101 "compi/gramatica.y"
 {yyerror("Error de sentencia");}
 break;
 case 47:
-//#line 102 "compi/gramatica.y"
+//#line 104 "compi/gramatica.y"
 {desapilarSalto(tercetos.size()); crearTerceto("Label"+tercetos.size(),null,null,null); salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia if ");}
 break;
 case 48:
-//#line 103 "compi/gramatica.y"
+//#line 105 "compi/gramatica.y"
 {desapilarSalto(tercetos.size() + 1); apilarSalto(crearTerceto("BI",null,null,null)); crearTerceto("Label"+tercetos.size(),null,null,null);}
 break;
 case 49:
-//#line 103 "compi/gramatica.y"
+//#line 105 "compi/gramatica.y"
 {desapilarSalto(tercetos.size()); crearTerceto("Label"+tercetos.size(),null,null,null); salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia if else ");}
 break;
 case 50:
-//#line 104 "compi/gramatica.y"
+//#line 106 "compi/gramatica.y"
 {yyerror("Error en la definicion del if");}
 break;
 case 51:
-//#line 105 "compi/gramatica.y"
+//#line 107 "compi/gramatica.y"
 {yyerror("Error en la definicion del if falta )");}
 break;
 case 52:
-//#line 106 "compi/gramatica.y"
+//#line 108 "compi/gramatica.y"
 {yyerror("Error en la definicion del if falta (");}
 break;
 case 53:
-//#line 107 "compi/gramatica.y"
+//#line 109 "compi/gramatica.y"
 {yyerror("Error en la definicion del if");}
 break;
 case 54:
-//#line 108 "compi/gramatica.y"
+//#line 110 "compi/gramatica.y"
 {yyerror("Error en la definicion del if falta )");}
 break;
 case 55:
-//#line 109 "compi/gramatica.y"
+//#line 111 "compi/gramatica.y"
 {yyerror("Error en la definicion del if falta (");}
 break;
 case 56:
-//#line 112 "compi/gramatica.y"
+//#line 114 "compi/gramatica.y"
 {crearTerceto("Label"+tercetos.size(),null,null,null); insertarNoTerminal("condicion",crearTercetoTipo("<",tercetos.get(Integer.parseInt((noTerminalTercetos.get("asignacion")).substring(1,(noTerminalTercetos.get("asignacion")).length()-1))).operando1,noTerminalTercetos.get("factor"),"boolean")); apilarSalto(crearTerceto("BF",noTerminalTercetos.get("condicion"),null,null));}
 break;
 case 57:
-//#line 113 "compi/gramatica.y"
+//#line 115 "compi/gramatica.y"
 {apilarExpresionFor(tercetos.get(Integer.parseInt((noTerminalTercetos.get("asignacion")).substring(1,(noTerminalTercetos.get("asignacion")).length()-1))).operando1,noTerminalTercetos.get("factor"));}
 break;
 case 58:
-//#line 114 "compi/gramatica.y"
+//#line 116 "compi/gramatica.y"
 {desapilarExpresionFor(); crearTerceto("BI",null,new String("[" + (pilaSaltos.get(pilaSaltos.size()-1)-2) + "]"),null); desapilarSalto(tercetos.size()); crearTerceto("Label"+tercetos.size(),null,null,null); salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia for ");}
 break;
 case 59:
-//#line 115 "compi/gramatica.y"
+//#line 117 "compi/gramatica.y"
 {yyerror("Error en la definicion del for");}
 break;
 case 60:
-//#line 116 "compi/gramatica.y"
+//#line 118 "compi/gramatica.y"
 {yyerror("Error en la definicion del for falta (");}
 break;
 case 61:
-//#line 117 "compi/gramatica.y"
+//#line 119 "compi/gramatica.y"
 {yyerror("Error en la definicion del for falta )");}
 break;
 case 62:
-//#line 120 "compi/gramatica.y"
+//#line 122 "compi/gramatica.y"
 {salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - LLamado a metodo de objeto. ");
 									   verificarDeclaracionVariable(val_peek(5).sval);
 									   verificarDeclaracionMetodo(val_peek(5).sval,val_peek(3).sval);
@@ -1111,142 +1151,142 @@ case 62:
 									   }
 break;
 case 63:
-//#line 125 "compi/gramatica.y"
+//#line 127 "compi/gramatica.y"
 {yyerror("Error en la invocacion a metodo");}
 break;
 case 64:
-//#line 126 "compi/gramatica.y"
+//#line 128 "compi/gramatica.y"
 {yyerror("Error en la invocacion a metodo - metodo vacio");}
 break;
 case 65:
-//#line 129 "compi/gramatica.y"
+//#line 131 "compi/gramatica.y"
 {salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia print ");}
 break;
 case 66:
-//#line 130 "compi/gramatica.y"
+//#line 132 "compi/gramatica.y"
 {yyerror("Error en la impresion");}
 break;
 case 67:
-//#line 133 "compi/gramatica.y"
+//#line 135 "compi/gramatica.y"
 {salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia asignacion de variable. ");
 											  insertarNoTerminal("asignacion",crearTercetoTipo(":=",val_peek(3).sval,noTerminalTercetos.get("expresion"),getTipo(noTerminalTercetos.get(val_peek(3).sval))));}
 break;
 case 68:
-//#line 135 "compi/gramatica.y"
+//#line 137 "compi/gramatica.y"
 {yyerror("Error en la asignacion lado derecho");}
 break;
 case 69:
-//#line 136 "compi/gramatica.y"
+//#line 138 "compi/gramatica.y"
 {yyerror("Error en la asignacion lado izquierdo");}
 break;
 case 70:
-//#line 139 "compi/gramatica.y"
+//#line 141 "compi/gramatica.y"
 {insertarNoTerminal("li_condicion",noTerminalTercetos.get("expresion"));}
 break;
 case 71:
-//#line 139 "compi/gramatica.y"
+//#line 141 "compi/gramatica.y"
 {insertarNoTerminal("condicion",crearTercetoTipo(">=",noTerminalTercetos.get("li_condicion"),noTerminalTercetos.get("expresion"),"boolean"));
 					  apilarSalto(crearTerceto("BF",noTerminalTercetos.get("condicion"),null,null));}
 break;
 case 72:
-//#line 141 "compi/gramatica.y"
+//#line 143 "compi/gramatica.y"
 {insertarNoTerminal("li_condicion",noTerminalTercetos.get("expresion"));}
 break;
 case 73:
-//#line 141 "compi/gramatica.y"
+//#line 143 "compi/gramatica.y"
 {insertarNoTerminal("condicion",crearTercetoTipo("<=",noTerminalTercetos.get("li_condicion"),noTerminalTercetos.get("expresion"),"boolean"));
 		 			  apilarSalto(crearTerceto("BF",noTerminalTercetos.get("condicion"),null,null));}
 break;
 case 74:
-//#line 143 "compi/gramatica.y"
+//#line 145 "compi/gramatica.y"
 {insertarNoTerminal("li_condicion",noTerminalTercetos.get("expresion"));}
 break;
 case 75:
-//#line 143 "compi/gramatica.y"
+//#line 145 "compi/gramatica.y"
 {insertarNoTerminal("condicion",crearTercetoTipo(">",noTerminalTercetos.get("li_condicion"),noTerminalTercetos.get("expresion"),"boolean"));
 		  			  apilarSalto(crearTerceto("BF",noTerminalTercetos.get("condicion"),null,null));}
 break;
 case 76:
-//#line 145 "compi/gramatica.y"
+//#line 147 "compi/gramatica.y"
 {insertarNoTerminal("li_condicion",noTerminalTercetos.get("expresion"));}
 break;
 case 77:
-//#line 145 "compi/gramatica.y"
+//#line 147 "compi/gramatica.y"
 {insertarNoTerminal("condicion",crearTercetoTipo("<",noTerminalTercetos.get("li_condicion"),noTerminalTercetos.get("expresion"),"boolean"));
 		 			  apilarSalto(crearTerceto("BF",noTerminalTercetos.get("condicion"),null,null));}
 break;
 case 78:
-//#line 147 "compi/gramatica.y"
+//#line 149 "compi/gramatica.y"
 {insertarNoTerminal("li_condicion",noTerminalTercetos.get("expresion"));}
 break;
 case 79:
-//#line 147 "compi/gramatica.y"
+//#line 149 "compi/gramatica.y"
 {insertarNoTerminal("condicion",crearTercetoTipo("==",noTerminalTercetos.get("li_condicion"),noTerminalTercetos.get("expresion"),"boolean"));
 		 			  apilarSalto(crearTerceto("BF",noTerminalTercetos.get("condicion"),null,null));}
 break;
 case 80:
-//#line 149 "compi/gramatica.y"
+//#line 151 "compi/gramatica.y"
 {insertarNoTerminal("li_condicion",noTerminalTercetos.get("expresion"));}
 break;
 case 81:
-//#line 149 "compi/gramatica.y"
+//#line 151 "compi/gramatica.y"
 {insertarNoTerminal("condicion",crearTercetoTipo("<>",noTerminalTercetos.get("li_condicion"),noTerminalTercetos.get("expresion"),"boolean"));
 		 			  apilarSalto(crearTerceto("BF",noTerminalTercetos.get("condicion"),null,null));}
 break;
 case 84:
-//#line 157 "compi/gramatica.y"
+//#line 159 "compi/gramatica.y"
 {insertarNoTerminal("expresion",crearTercetoTipo("+",noTerminalTercetos.get("expresion"),noTerminalTercetos.get("termino"),getTipo(noTerminalTercetos.get("termino"))));}
 break;
 case 85:
-//#line 158 "compi/gramatica.y"
+//#line 160 "compi/gramatica.y"
 {insertarNoTerminal("expresion",crearTercetoTipo("-",noTerminalTercetos.get("expresion"),noTerminalTercetos.get("termino"),getTipo(noTerminalTercetos.get("termino"))));}
 break;
 case 86:
-//#line 159 "compi/gramatica.y"
+//#line 161 "compi/gramatica.y"
 {insertarNoTerminal("expresion",noTerminalTercetos.get("termino"));}
 break;
 case 87:
-//#line 161 "compi/gramatica.y"
+//#line 163 "compi/gramatica.y"
 {insertarNoTerminal("termino",crearTercetoTipo("*",noTerminalTercetos.get("termino"),noTerminalTercetos.get("factor"),getTipo(noTerminalTercetos.get("termino"))));}
 break;
 case 88:
-//#line 162 "compi/gramatica.y"
+//#line 164 "compi/gramatica.y"
 {insertarNoTerminal("termino",crearTercetoTipo("/",noTerminalTercetos.get("termino"),noTerminalTercetos.get("factor"),getTipo(noTerminalTercetos.get("termino"))));}
 break;
 case 89:
-//#line 163 "compi/gramatica.y"
+//#line 165 "compi/gramatica.y"
 {insertarNoTerminal("termino",noTerminalTercetos.get("factor"));}
 break;
 case 90:
-//#line 166 "compi/gramatica.y"
+//#line 168 "compi/gramatica.y"
 {insertarNoTerminal("factor",val_peek(0).sval);}
 break;
 case 91:
-//#line 167 "compi/gramatica.y"
+//#line 169 "compi/gramatica.y"
 {insertarNoTerminal("factor",val_peek(0).sval);}
 break;
 case 93:
-//#line 171 "compi/gramatica.y"
+//#line 173 "compi/gramatica.y"
 {verificarDeclaracionVariable(val_peek(0).sval);}
 break;
 case 94:
-//#line 173 "compi/gramatica.y"
+//#line 175 "compi/gramatica.y"
 {verificarDeclaracionVariable(val_peek(2).sval);
 					verificarDeclaracionAtributo(val_peek(2).sval,val_peek(0).sval);
 					yyval = new ParserVal(val_peek(2).sval + "@" + val_peek(0).sval);}
 break;
 case 95:
-//#line 178 "compi/gramatica.y"
+//#line 180 "compi/gramatica.y"
 { if(!aLexico.verificarRango(val_peek(0).sval)){
 	    	yyerror("Error : constante entera fuera de rango.");}else{
 			}}
 break;
 case 96:
-//#line 181 "compi/gramatica.y"
+//#line 183 "compi/gramatica.y"
 {aLexico.actualizarTablaSimbolos(val_peek(0).sval);
 				yyval = new ParserVal("-" + val_peek(0).sval);}
 break;
-//#line 1178 "Parser.java"
+//#line 1213 "Parser.java"
 //########## END OF USER-SUPPLIED ACTIONS ##########
     }//switch
     //#### Now let's reduce... ####

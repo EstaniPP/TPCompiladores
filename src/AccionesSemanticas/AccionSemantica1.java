@@ -24,7 +24,9 @@ public class AccionSemantica1 extends AccionSemantica{
 				str.delete(25, str.length());
 				al.agregarError("Warning : el identificador se trunco a 25 caracteres.");
 			}
-			al.agregarLexema();
+			if(!al.getTablaSimbolos().containsKey(al.getLexema().toString())) {
+				al.agregarLexema();
+			}
 		}
 		return "ID";
 	}

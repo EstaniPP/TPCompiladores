@@ -7,6 +7,9 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.filechooser.FileNameExtensionFilter;
+
 import AccionesSemanticas.*;
 
 public class AnalizadorLexico {
@@ -37,10 +40,10 @@ public class AnalizadorLexico {
 		//JFILECHOOSER
 		
 		JFileChooser fc = new JFileChooser();
+		fc.setFileFilter(new FileNameExtensionFilter("TEXT FILES", "txt", "text"));
         int result = fc.showOpenDialog(null);
         if (result == JFileChooser.APPROVE_OPTION) {
             archivo = fc.getSelectedFile();
-        }
         
         //LEO TODAS LAS LINEAS DEL ARCHIVO
         
@@ -213,6 +216,10 @@ public class AnalizadorLexico {
 			{null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,as8,null,null},/*#*/
 			{as5,as5,as5,as5,as5,as5,as5,as5,as5,as5,as5,as5,as5,as11,as5,as5,as10,as12,as5}/*cadena multilinea*/
 		};
+        }else {
+        	JOptionPane.showMessageDialog(null, "No ha seleccionado ningun archivo");
+        	System.exit(1);
+        }
 	}
 	
 	public void disminuirContador() {
