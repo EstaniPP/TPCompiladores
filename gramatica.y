@@ -99,8 +99,8 @@ sentencia_ej: asignacion
 			| error ';' {yyerror("Error de sentencia");}
 	        ;
 
-seleccion: IF '(' condicion ')' bloque END_IF {desapilarSalto(tercetos.size()); salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia if ");}
-	   | IF '(' condicion ')' bloque ELSE {desapilarSalto(tercetos.size() + 1); apilarSalto(crearTerceto("BI",null,null,null));} bloque END_IF {desapilarSalto(tercetos.size()); salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia if else ");}
+seleccion: IF '(' condicion ')' bloque END_IF {desapilarSalto(tercetos.size()); crearTerceto("Label"+tercetos.size(),null,null,null); salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia if ");}
+	   | IF '(' condicion ')' bloque ELSE {desapilarSalto(tercetos.size() + 1); apilarSalto(crearTerceto("BI",null,null,null)); crearTerceto("Label"+tercetos.size(),null,null,null);} bloque END_IF {desapilarSalto(tercetos.size()); crearTerceto("Label"+tercetos.size(),null,null,null); salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia if else ");}
 	   | IF '(' error ')' bloque END_IF {yyerror("Error en la definicion del if");}
 	   | IF '(' error bloque END_IF {yyerror("Error en la definicion del if falta )");}
 	   | IF error ')' bloque END_IF {yyerror("Error en la definicion del if falta (");}
@@ -109,9 +109,9 @@ seleccion: IF '(' condicion ')' bloque END_IF {desapilarSalto(tercetos.size()); 
 	   | IF error ')' bloque ELSE bloque END_IF {yyerror("Error en la definicion del if falta (");}
 	   ;
 
-iteracion:  FOR '(' asignacion factor {insertarNoTerminal("condicion",crearTercetoTipo("<",tercetos.get(Integer.parseInt((noTerminalTercetos.get("asignacion")).substring(1,(noTerminalTercetos.get("asignacion")).length()-1))).operando1,noTerminalTercetos.get("factor"),"boolean")); apilarSalto(crearTerceto("BF",noTerminalTercetos.get("condicion"),null,null));} 
+iteracion:  FOR '(' asignacion factor {crearTerceto("Label"+tercetos.size(),null,null,null); insertarNoTerminal("condicion",crearTercetoTipo("<",tercetos.get(Integer.parseInt((noTerminalTercetos.get("asignacion")).substring(1,(noTerminalTercetos.get("asignacion")).length()-1))).operando1,noTerminalTercetos.get("factor"),"boolean")); apilarSalto(crearTerceto("BF",noTerminalTercetos.get("condicion"),null,null));} 
 				';' factor {apilarExpresionFor(tercetos.get(Integer.parseInt((noTerminalTercetos.get("asignacion")).substring(1,(noTerminalTercetos.get("asignacion")).length()-1))).operando1,noTerminalTercetos.get("factor"));} ')'
-				 bloque ';' {desapilarExpresionFor(); crearTerceto("BI",null,new String("[" + (pilaSaltos.get(pilaSaltos.size()-1)-1) + "]"),null); desapilarSalto(tercetos.size()); salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia for ");}
+				 bloque ';' {desapilarExpresionFor(); crearTerceto("BI",null,new String("[" + (pilaSaltos.get(pilaSaltos.size()-1)-2) + "]"),null); desapilarSalto(tercetos.size()); crearTerceto("Label"+tercetos.size(),null,null,null); salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia for ");}
 		   |FOR '(' error ')' bloque ';'{yyerror("Error en la definicion del for");}
 		   |FOR error ')' bloque ';'{yyerror("Error en la definicion del for falta (");}
 		   |FOR '(' error bloque ';'{yyerror("Error en la definicion del for falta )");}

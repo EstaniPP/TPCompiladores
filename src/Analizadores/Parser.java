@@ -613,7 +613,7 @@ final static String yyrule[] = {
 	}
 	public void agregarTipoVariables(String tipo){
 		for(String s: variables){
-			aLexico.agregarAtributoLexema(s,"Tipo",tipo);
+				aLexico.agregarAtributoLexema(s,"Tipo",tipo);
 		}
 		if(!tipo.equals("int") && !tipo.equals("float")){
 			crearObjetoTablaSimbolos(tipo);
@@ -738,7 +738,7 @@ final static String yyrule[] = {
 			System.out.println(i++ + s.toString());
 		}
 	}
-//#line 670 "Parser.java"
+//#line 675 "Parser.java"
 //###############################################################
 // method: yylexdebug : check lexer state
 //###############################################################
@@ -1044,15 +1044,15 @@ case 46:
 break;
 case 47:
 //#line 102 "compi/gramatica.y"
-{desapilarSalto(tercetos.size()); salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia if ");}
+{desapilarSalto(tercetos.size()); crearTerceto("Label"+tercetos.size(),null,null,null); salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia if ");}
 break;
 case 48:
 //#line 103 "compi/gramatica.y"
-{desapilarSalto(tercetos.size() + 1); apilarSalto(crearTerceto("BI",null,null,null));}
+{desapilarSalto(tercetos.size() + 1); apilarSalto(crearTerceto("BI",null,null,null)); crearTerceto("Label"+tercetos.size(),null,null,null);}
 break;
 case 49:
 //#line 103 "compi/gramatica.y"
-{desapilarSalto(tercetos.size()); salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia if else ");}
+{desapilarSalto(tercetos.size()); crearTerceto("Label"+tercetos.size(),null,null,null); salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia if else ");}
 break;
 case 50:
 //#line 104 "compi/gramatica.y"
@@ -1080,7 +1080,7 @@ case 55:
 break;
 case 56:
 //#line 112 "compi/gramatica.y"
-{insertarNoTerminal("condicion",crearTercetoTipo("<",tercetos.get(Integer.parseInt((noTerminalTercetos.get("asignacion")).substring(1,(noTerminalTercetos.get("asignacion")).length()-1))).operando1,noTerminalTercetos.get("factor"),"boolean")); apilarSalto(crearTerceto("BF",noTerminalTercetos.get("condicion"),null,null));}
+{crearTerceto("Label"+tercetos.size(),null,null,null); insertarNoTerminal("condicion",crearTercetoTipo("<",tercetos.get(Integer.parseInt((noTerminalTercetos.get("asignacion")).substring(1,(noTerminalTercetos.get("asignacion")).length()-1))).operando1,noTerminalTercetos.get("factor"),"boolean")); apilarSalto(crearTerceto("BF",noTerminalTercetos.get("condicion"),null,null));}
 break;
 case 57:
 //#line 113 "compi/gramatica.y"
@@ -1088,7 +1088,7 @@ case 57:
 break;
 case 58:
 //#line 114 "compi/gramatica.y"
-{desapilarExpresionFor(); crearTerceto("BI",null,new String("[" + (pilaSaltos.get(pilaSaltos.size()-1)-1) + "]"),null); desapilarSalto(tercetos.size()); salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia for ");}
+{desapilarExpresionFor(); crearTerceto("BI",null,new String("[" + (pilaSaltos.get(pilaSaltos.size()-1)-2) + "]"),null); desapilarSalto(tercetos.size()); crearTerceto("Label"+tercetos.size(),null,null,null); salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia for ");}
 break;
 case 59:
 //#line 115 "compi/gramatica.y"
@@ -1246,7 +1246,7 @@ case 96:
 {aLexico.actualizarTablaSimbolos(val_peek(0).sval);
 				yyval = new ParserVal("-" + val_peek(0).sval);}
 break;
-//#line 1173 "Parser.java"
+//#line 1178 "Parser.java"
 //########## END OF USER-SUPPLIED ACTIONS ##########
     }//switch
     //#### Now let's reduce... ####
