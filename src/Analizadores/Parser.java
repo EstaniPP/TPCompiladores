@@ -898,7 +898,7 @@ final static String yyrule[] = {
 					escribir1.write(sb.toString());		
 					escribir1.write("maximoNegativo DQ -3.40282347E38");
 					escribir1.write(sb.toString());		
-					escribir1.write("ceroFloat DD 0.0");
+					escribir1.write("ceroFloat DQ 0.0");
 					escribir1.write(sb.toString());		
 					escribir1.write("aux DD ?");
 					escribir1.write(sb.toString());									

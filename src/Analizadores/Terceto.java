@@ -384,9 +384,9 @@ public class Terceto {
 				codigo.add("FSTSW AX");
 				codigo.add("SAHF");
 				codigo.add("JA OKFLOAT");
-				codigo.add("FCOM maximoNegativo");
 				codigo.add("FINIT");
 				codigo.add("FLD aux");
+				codigo.add("FCOM maximoNegativo");
 				codigo.add("FSTSW AX");
 				codigo.add("SAHF");
 				codigo.add("JB OVERFLOW_FLOAT");
