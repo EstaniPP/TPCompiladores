@@ -900,7 +900,7 @@ final static String yyrule[] = {
 					escribir1.write(sb.toString());		
 					escribir1.write("ceroFloat DQ 0.0");
 					escribir1.write(sb.toString());		
-					escribir1.write("aux DD ?");
+					escribir1.write("aux DQ ?");
 					escribir1.write(sb.toString());									
 					escribir1.write("@OVERFLOWFLOAT DB \"Error overflow float\",0");
 					escribir1.write(sb.toString());
@@ -926,6 +926,7 @@ final static String yyrule[] = {
 
 	}
 
+
 	public static void main(String args[])
 	{
 		Parser par = new Parser(false);
@@ -936,7 +937,7 @@ final static String yyrule[] = {
 		}
 		par.saveFile();
 	}
-//#line 865 "Parser.java"
+//#line 869 "Parser.java"
 //###############################################################
 // method: yylexdebug : check lexer state
 //###############################################################
@@ -1495,7 +1496,7 @@ case 108:
 {aLexico.actualizarTablaSimbolos(val_peek(0).sval);
 				yyval = new ParserVal("-" + val_peek(0).sval);}
 break;
-//#line 1419 "Parser.java"
+//#line 1423 "Parser.java"
 //########## END OF USER-SUPPLIED ACTIONS ##########
     }//switch
     //#### Now let's reduce... ####

@@ -357,6 +357,7 @@ public class Terceto {
 				codigo.add("END START");
 			}else if(t.operador.equals("OVERFLOW_FLOAT")) {
 				codigo.add("OVERFLOW_FLOAT:");
+				codigo.add("FINIT");
 				codigo.add("invoke StdOut, addr @OVERFLOWFLOAT");
 				codigo.add("JMP ENDSTART");
 			}else if(t.operador.equals("OVERFLOW_INT")) {

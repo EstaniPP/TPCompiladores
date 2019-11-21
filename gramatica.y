@@ -539,7 +539,9 @@ cte : CTE { if(!aLexico.verificarRango($1.sval)){
 					escribir1.write(sb.toString());		
 					escribir1.write("maximoNegativo DQ -3.40282347E38");
 					escribir1.write(sb.toString());		
-					escribir1.write("ceroFloat DD 0.0");
+					escribir1.write("ceroFloat DQ 0.0");
+					escribir1.write(sb.toString());		
+					escribir1.write("aux DQ ?");
 					escribir1.write(sb.toString());									
 					escribir1.write("@OVERFLOWFLOAT DB \"Error overflow float\",0");
 					escribir1.write(sb.toString());
