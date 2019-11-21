@@ -8,21 +8,19 @@
 	import java.io.IOException;
 	import javax.swing.JFileChooser;
 	import java.util.HashMap;
+	import javax.swing.JOptionPane;
 %}
 
 %token ID CTE IF ELSE END_IF PRINT INT BEGIN END FLOAT FOR CLASS EXTENDS CADENA ERROR VOID MAYOR_IGUAL MENOR_IGUAL IGUAL DISTINTO ASIGN ERROR
 
 
 %%
-programa : conjunto_sentencias {salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Programa aceptado.");
-								crearTerceto("OVERFLOW_FLOAT",null,null,null);
-								crearTerceto("OVERFLOW_INT",null,null,null);
-								crearTerceto("DIVISIONCERO",null,null,null);
-								crearTerceto("END_PROGRAMA",null,null,null);}
+programa : {crearTerceto("CHECKOVERFLOWFLOAT",null,null,null); crearTerceto("OVERFLOW_FLOAT",null,null,null); crearTerceto("OVERFLOW_INT",null,null,null); crearTerceto("DIVISIONCERO",null,null,null);} conjunto_sentencias {salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Programa aceptado.");
+			crearTerceto("END_PROGRAMA",null,null,null);}
     	;
 
-conjunto_sentencias: BEGIN  sentencias_ejecutables END {crearTerceto("LABEL","INICIO",null,null); salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Programa con sentencias ejecutables sin declaraciones. ");}
-			| declaraciones BEGIN sentencias_ejecutables END {salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Programa con sentencias ejecutables y declaraciones. ");}
+conjunto_sentencias: BEGIN {crearTerceto("LABEL","START",null,null);}  sentencias_ejecutables END {salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Programa con sentencias ejecutables sin declaraciones. ");}
+			| declaraciones BEGIN {crearTerceto("LABEL","START",null,null);} sentencias_ejecutables END {salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Programa con sentencias ejecutables y declaraciones. ");}
 		   ;
 
 declaraciones: declaracion_clase {agregarUsoVariables("nombreAtributo");}
@@ -124,9 +122,9 @@ seleccion: IF '(' condicion ')' bloqueThen END_IF ';' {desapilarSalto(tercetos.s
 
 bloqueThen:	bloque ;
 bloqueElse:	{desapilarSalto(tercetos.size() + 1); apilarSalto(crearTerceto("BI",null,null,null)); crearTerceto("LABEL","Label"+tercetos.size(),null,null);} bloque ;
-iteracion:  FOR '(' asignacion factor {crearTerceto("LABEL","Label"+tercetos.size(),null,null); insertarNoTerminal("condicion",crearTercetoTipo("CMP",tercetos.get(Integer.parseInt((noTerminalTercetos.get("asignacion")).substring(1,(noTerminalTercetos.get("asignacion")).length()-1))).operando1,noTerminalTercetos.get("factor"),"boolean")); apilarSalto(crearTerceto("JGE",noTerminalTercetos.get("condicion"),null,null));} 
+iteracion:  FOR '(' asignacion factor {crearTerceto("LABEL","Label"+tercetos.size(),null,null); insertarNoTerminal("condicion",crearTercetoTipo("CMP",tercetos.get(Integer.parseInt((noTerminalTercetos.get("asignacion")).substring(1,(noTerminalTercetos.get("asignacion")).length()-1))).operando1,noTerminalTercetos.get("factor"),getTipo(noTerminalTercetos.get("factor")))); apilarSalto(crearTerceto("JGE",noTerminalTercetos.get("condicion"),null,null));} 
 				';' factor {apilarExpresionFor(tercetos.get(Integer.parseInt((noTerminalTercetos.get("asignacion")).substring(1,(noTerminalTercetos.get("asignacion")).length()-1))).operando1,noTerminalTercetos.get("factor"));} ')'
-				 bloque ';' {desapilarExpresionFor(); crearTerceto("BI",null,new String("[" + (pilaSaltos.get(pilaSaltos.size()-1)-2) + "]"),null); desapilarSalto(tercetos.size()); crearTerceto("Label","Label"+tercetos.size(),null,null); salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia for ");}
+				 bloque ';' {desapilarExpresionFor(); crearTerceto("BI",null,new String("[" + (pilaSaltos.get(pilaSaltos.size()-1)-2) + "]"),null); desapilarSalto(tercetos.size()); crearTerceto("LABEL","Label"+tercetos.size(),null,null); salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia for ");}
 		   |FOR '(' error ')' bloque ';'{yyerror("Error en la definicion del for");}
 		   |FOR error ')' bloque ';'{yyerror("Error en la definicion del for falta (");}
 		   |FOR '(' error bloque ';'{yyerror("Error en la definicion del for falta )");}
@@ -155,17 +153,17 @@ asignacion: identificador ASIGN expresion ';'{salida.add("Linea - "+ (aLexico.ge
 			|error ASIGN expresion ';'{yyerror("Error en la asignacion lado izquierdo");}
 	     ;
 
-condicion: expresion {insertarNoTerminal("li_condicion",noTerminalTercetos.get("expresion"));} MAYOR_IGUAL expresion {insertarNoTerminal("condicion",crearTercetoTipo("CMP",noTerminalTercetos.get("li_condicion"),noTerminalTercetos.get("expresion"),"boolean"));
+condicion: expresion {insertarNoTerminal("li_condicion",noTerminalTercetos.get("expresion"));} MAYOR_IGUAL expresion {insertarNoTerminal("condicion",crearTercetoTipo("CMP",noTerminalTercetos.get("li_condicion"),noTerminalTercetos.get("expresion"),getTipo(noTerminalTercetos.get("li_condicion"))));
 					  apilarSalto(crearTerceto("JL",noTerminalTercetos.get("condicion"),null,null));}
-	     | expresion {insertarNoTerminal("li_condicion",noTerminalTercetos.get("expresion"));} MENOR_IGUAL expresion {insertarNoTerminal("condicion",crearTercetoTipo("CMP",noTerminalTercetos.get("li_condicion"),noTerminalTercetos.get("expresion"),"boolean"));
+	     | expresion {insertarNoTerminal("li_condicion",noTerminalTercetos.get("expresion"));} MENOR_IGUAL expresion {insertarNoTerminal("condicion",crearTercetoTipo("CMP",noTerminalTercetos.get("li_condicion"),noTerminalTercetos.get("expresion"),getTipo(noTerminalTercetos.get("li_condicion"))));
 		 			  apilarSalto(crearTerceto("JG",noTerminalTercetos.get("condicion"),null,null));}
-     	 | expresion {insertarNoTerminal("li_condicion",noTerminalTercetos.get("expresion"));} '>' expresion {insertarNoTerminal("condicion",crearTercetoTipo("CMP",noTerminalTercetos.get("li_condicion"),noTerminalTercetos.get("expresion"),"boolean"));
+     	 | expresion {insertarNoTerminal("li_condicion",noTerminalTercetos.get("expresion"));} '>' expresion {insertarNoTerminal("condicion",crearTercetoTipo("CMP",noTerminalTercetos.get("li_condicion"),noTerminalTercetos.get("expresion"),getTipo(noTerminalTercetos.get("li_condicion"))));
 		  			  apilarSalto(crearTerceto("JLE",noTerminalTercetos.get("condicion"),null,null));}
-	     | expresion {insertarNoTerminal("li_condicion",noTerminalTercetos.get("expresion"));} '<' expresion {insertarNoTerminal("condicion",crearTercetoTipo("CMP",noTerminalTercetos.get("li_condicion"),noTerminalTercetos.get("expresion"),"boolean"));
+	     | expresion {insertarNoTerminal("li_condicion",noTerminalTercetos.get("expresion"));} '<' expresion {insertarNoTerminal("condicion",crearTercetoTipo("CMP",noTerminalTercetos.get("li_condicion"),noTerminalTercetos.get("expresion"),getTipo(noTerminalTercetos.get("li_condicion"))));
 		 			  apilarSalto(crearTerceto("JGE",noTerminalTercetos.get("condicion"),null,null));}
-	     | expresion {insertarNoTerminal("li_condicion",noTerminalTercetos.get("expresion"));} IGUAL expresion {insertarNoTerminal("condicion",crearTercetoTipo("CMP",noTerminalTercetos.get("li_condicion"),noTerminalTercetos.get("expresion"),"boolean"));
+	     | expresion {insertarNoTerminal("li_condicion",noTerminalTercetos.get("expresion"));} IGUAL expresion {insertarNoTerminal("condicion",crearTercetoTipo("CMP",noTerminalTercetos.get("li_condicion"),noTerminalTercetos.get("expresion"),getTipo(noTerminalTercetos.get("li_condicion"))));
 		 			  apilarSalto(crearTerceto("JNE",noTerminalTercetos.get("condicion"),null,null));}
-	     | expresion {insertarNoTerminal("li_condicion",noTerminalTercetos.get("expresion"));} DISTINTO expresion {insertarNoTerminal("condicion",crearTercetoTipo("CMP",noTerminalTercetos.get("li_condicion"),noTerminalTercetos.get("expresion"),"boolean"));
+	     | expresion {insertarNoTerminal("li_condicion",noTerminalTercetos.get("expresion"));} DISTINTO expresion {insertarNoTerminal("condicion",crearTercetoTipo("CMP",noTerminalTercetos.get("li_condicion"),noTerminalTercetos.get("expresion"),getTipo(noTerminalTercetos.get("li_condicion"))));
 		 			  apilarSalto(crearTerceto("JE",noTerminalTercetos.get("condicion"),null,null));}
 	     ;
 
@@ -459,25 +457,7 @@ cte : CTE { if(!aLexico.verificarRango($1.sval)){
 		    	writer.print("");
 		    	FileWriter escribir = new FileWriter(archivo+"\\salidaCompilador.txt", true);
 		    	StringBuilder sb = new StringBuilder("\r\n");
-				
-		    	escribir.write("Tokens reconocidos:");
-				escribir.write(sb.toString());
-				escribir.write(sb.toString());
-				for(String s: tokens){
-					escribir.write(s.toString()+ " - ");
-				}
 
-				escribir.write(sb.toString());
-				escribir.write(sb.toString());
-		    	escribir.write("Estructuras reconocidas:");
-				escribir.write(sb.toString());
-				escribir.write(sb.toString());
-				for(String s: salida){
-					escribir.write(s.toString());
-					escribir.write(sb.toString());
-				}
-
-				escribir.write(sb.toString());
 				for(String s: this.getErrores()){
 					escribir.write(s.toString());
 					escribir.write(sb.toString());
@@ -485,19 +465,98 @@ cte : CTE { if(!aLexico.verificarRango($1.sval)){
 
 				escribir.write(aLexico.getDatosTablaSimbolos());
 				escribir.write(sb.toString());
+
+				
+				escribir.write("Tercetos");
+				escribir.write(sb.toString());
+				
+				int i =0;	
+				for(Terceto s : tercetos) {
+					escribir.write((i++) + "-" + s.toString());
+					escribir.write(sb.toString());
+				}	
+				
 		        escribir.close();
-	
 
 				if(aLexico.getErrores().size() == 0 && erroresSem.size() == 0 && errores.size() == 0){		
-					PrintWriter writer1 = new PrintWriter(archivo+"\\program.txt");
+					PrintWriter writer1 = new PrintWriter(archivo+"\\program.asm");
 					writer1.print("");
-					FileWriter escribir1 = new FileWriter(archivo+"\\program.txt", true);
+					FileWriter escribir1 = new FileWriter(archivo+"\\program.asm", true);
 			
+					escribir1.write(".386");
+					escribir1.write(sb.toString());
+					escribir1.write(".model flat, stdcall");
+					escribir1.write(sb.toString());
+					escribir1.write("include \\masm32\\include\\masm32rt.inc");
+					escribir1.write(sb.toString());
+					escribir1.write("include \\masm32\\include\\windows.inc");
+					escribir1.write(sb.toString());
+					escribir1.write("include \\masm32\\include\\kernel32.inc");
+					escribir1.write(sb.toString());
+					escribir1.write("include \\masm32\\include\\user32.inc");
+					escribir1.write(sb.toString());
+					escribir1.write("includelib \\masm32\\lib\\kernel32.lib");
+					escribir1.write(sb.toString());
+					escribir1.write("includelib \\masm32\\lib\\user32.lib");
+					escribir1.write(sb.toString());
+					escribir1.write(".data");
+					escribir1.write(sb.toString());
+
+					HashMap<String,HashMap<String,Object>> tablaSimbolos = aLexico.getTablaSimbolos();
+					for(String key: tablaSimbolos.keySet()){
+						HashMap<String,Object> datosKey = tablaSimbolos.get(key);
+						if(datosKey.containsKey("Uso")){
+							if(datosKey.get("Uso").equals("variable") || datosKey.get("Uso").equals("nombreAtributo")){
+								if(datosKey.get("Tipo").equals("int")){
+									if(key.charAt(0)=='-')
+									{
+										escribir1.write("@"+key.substring(1,key.length())+" DW ?");
+										escribir1.write(sb.toString());
+									}else{
+										escribir1.write("_"+key+" DW ?");
+										escribir1.write(sb.toString());
+									}
+									
+								}else if(datosKey.get("Tipo").equals("float")){
+									escribir1.write("_"+key.replaceFirst("[.]","_").replaceFirst("-","@")+" DD ?");
+									escribir1.write(sb.toString());
+								}
+							}
+						}else if(datosKey.containsKey("Tipo") && datosKey.get("Tipo").equals("cadena")){
+							escribir1.write("_"+datosKey.get("NombreString")+" DB \""+key+"\",0");
+							escribir1.write(sb.toString());									
+						}else if(datosKey.containsKey("Tipo") && datosKey.get("Tipo").equals("float")){
+							escribir1.write("_"+key.replaceFirst("[.]","_").replaceFirst("-","@")+" DD "+key);
+							escribir1.write(sb.toString());						
+						}
+					}
+					//Variables overflow float
+					escribir1.write("minimoPositivo DQ 1.17549435E-38");
+					escribir1.write(sb.toString());		
+					escribir1.write("minimoNegativo DQ -1.17549435E-38");
+					escribir1.write(sb.toString());		
+					escribir1.write("maximoPositivo DQ 3.40282347E38");
+					escribir1.write(sb.toString());		
+					escribir1.write("maximoNegativo DQ -3.40282347E38");
+					escribir1.write(sb.toString());		
+					escribir1.write("ceroFloat DD 0.0");
+					escribir1.write(sb.toString());									
+					escribir1.write("@OVERFLOWFLOAT DB \"Error overflow float\",0");
+					escribir1.write(sb.toString());
+					escribir1.write("@OVERFLOWINT DB \"Error overflow int\",0");
+					escribir1.write(sb.toString());
+					escribir1.write("@DIVISIONCERO DB \"Error division por 0\",0");
+					escribir1.write(sb.toString());
+					escribir1.write(".code");
+					escribir1.write(sb.toString());
+					
 					for(String s : Terceto.codigo) {
 						escribir1.write(s);
 						escribir1.write(sb.toString());
 					}
 					escribir1.close();
+				}else{
+					JOptionPane.showMessageDialog(null, "Hubo errores de compilacion, revise salidaCompilador.txt");
 				}
 		    } catch (FileNotFoundException ex) {
 		    } catch (IOException ex) {
@@ -506,15 +565,14 @@ cte : CTE { if(!aLexico.verificarRango($1.sval)){
 
 	}
 
+
 	public static void main(String args[])
 	{
 		Parser par = new Parser(false);
 		Terceto.al = par.aLexico;
 		par.yyparse();
-		Terceto.crearCodigo(par.tercetos);
+		if(par.aLexico.getErrores().size() == 0 && par.erroresSem.size() == 0 && par.errores.size() == 0){
+			Terceto.crearCodigo(par.tercetos,par.aLexico.getTablaSimbolos());
+		}
 		par.saveFile();
-		int i =0;
-		for(Terceto s : par.tercetos) {
-			System.out.println(i++ + s.toString());
-		}		
 	}
