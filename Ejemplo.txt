@@ -1,0 +1,60 @@
+int contador,contador2;
+float suma_parcial, suma_total, suma_parcial2;
+
+class A
+begin
+	int id;
+	void asignarId()
+	begin 
+		id := 0;
+		print({-Asigne ID });
+	end
+end
+
+
+class B extends A
+begin
+	float idHijo;
+	float suma;
+	void sumar_DividirId()
+	begin
+		suma := suma_parcial + idHijo;
+		id:=0;
+	end	
+end
+
+class C
+begin
+	int idHijo2;
+	float suma2;
+end
+
+A objA;
+B objB;
+C objC;
+
+#PARA CHEQUEAR REDECLARACION EJECUTAR:int suma_parcial;
+
+begin
+#PARA CHEQUEAR INCOMPATIBILIDAD DE TIPOS EJECUTAR:suma_parcial:=5;
+	objB.idHijo:=6.9;
+	suma_parcial:=5.0;
+	suma_parcial2:=10.5*suma_parcial;
+	if(suma_parcial2>suma_parcial)
+		print({Suma parcial 2 es mayor});
+	end_if;
+	for(contador:=0;10;1)
+		objA.asignarId();
+	;
+	
+	suma_parcial:=12.0+-95.5/3.4*45.0-1.0;
+	if(suma_parcial==-1252.97059)
+		print({Bien});
+	else
+		print({Mal});
+	end_if;
+
+
+end
+$
+				

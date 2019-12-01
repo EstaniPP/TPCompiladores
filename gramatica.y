@@ -124,7 +124,13 @@ bloqueThen:	bloque ;
 bloqueElse:	{desapilarSalto(tercetos.size() + 1); apilarSalto(crearTerceto("BI",null,null,null)); crearTerceto("LABEL","Label"+tercetos.size(),null,null);} bloque ;
 iteracion:  FOR '(' asignacion factor {crearTerceto("LABEL","Label"+tercetos.size(),null,null); insertarNoTerminal("condicion",crearTercetoTipo("CMP",tercetos.get(Integer.parseInt((noTerminalTercetos.get("asignacion")).substring(1,(noTerminalTercetos.get("asignacion")).length()-1))).operando1,noTerminalTercetos.get("factor"),getTipo(noTerminalTercetos.get("factor")))); apilarSalto(crearTerceto("JGE",noTerminalTercetos.get("condicion"),null,null));} 
 				';' factor {apilarExpresionFor(tercetos.get(Integer.parseInt((noTerminalTercetos.get("asignacion")).substring(1,(noTerminalTercetos.get("asignacion")).length()-1))).operando1,noTerminalTercetos.get("factor"));} ')'
-				 bloque ';' {desapilarExpresionFor(); crearTerceto("BI",null,new String("[" + (pilaSaltos.get(pilaSaltos.size()-1)-2) + "]"),null); desapilarSalto(tercetos.size()); crearTerceto("LABEL","Label"+tercetos.size(),null,null); salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia for ");}
+				 bloque ';' {
+					 if(aLexico.getErrores().size() == 0 && erroresSem.size() == 0 && errores.size() == 0){
+					 desapilarExpresionFor(); 
+					 crearTerceto("BI",null,new String("[" + (pilaSaltos.get(pilaSaltos.size()-1)-2) + "]"),null); 
+					 desapilarSalto(tercetos.size()); crearTerceto("LABEL","Label"+tercetos.size(),null,null); 
+					 salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia for ");}
+				 }
 		   |FOR '(' error ')' bloque ';'{yyerror("Error en la definicion del for");}
 		   |FOR error ')' bloque ';'{yyerror("Error en la definicion del for falta (");}
 		   |FOR '(' error bloque ';'{yyerror("Error en la definicion del for falta )");}

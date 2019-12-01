@@ -369,7 +369,8 @@ public class Terceto {
 				codigo.add("invoke StdOut, addr @DIVISIONCERO");
 				codigo.add("JMP ENDSTART");
 			}else if(t.operador.equals("PRINT")) {
-				codigo.add("invoke StdOut, addr _"+tablaSimbolos.get(t.operando1).get("NombreString"));
+				codigo.add("print addr _"+tablaSimbolos.get(t.operando1).get("NombreString")+", 13, 10");
+				//codigo.add("invoke StdOut, addr _"+tablaSimbolos.get(t.operando1).get("NombreString"));
 			}else if(t.operador.equals("CHECKOVERFLOWFLOAT")) {
 				codigo.add("CHECKOVERFLOWFLOAT:");
 				codigo.add("FST aux");

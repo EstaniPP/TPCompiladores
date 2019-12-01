@@ -1334,7 +1334,11 @@ case 69:
 break;
 case 70:
 //#line 127 "compi/gramatica.y"
-{desapilarExpresionFor(); crearTerceto("BI",null,new String("[" + (pilaSaltos.get(pilaSaltos.size()-1)-2) + "]"),null); desapilarSalto(tercetos.size()); crearTerceto("LABEL","Label"+tercetos.size(),null,null); salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia for ");}
+	if(aLexico.getErrores().size() == 0 && erroresSem.size() == 0 && errores.size() == 0){
+{desapilarExpresionFor();
+crearTerceto("BI",null,new String("[" + (pilaSaltos.get(pilaSaltos.size()-1)-2) + "]"),null); 
+desapilarSalto(tercetos.size()); crearTerceto("LABEL","Label"+tercetos.size(),null,null); 
+salida.add("Linea - "+ (aLexico.getContadorFila()+1)+" - Sentencia for ");}}
 break;
 case 71:
 //#line 128 "compi/gramatica.y"
