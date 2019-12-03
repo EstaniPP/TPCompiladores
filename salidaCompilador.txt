@@ -1,0 +1,285 @@
+Errores lexicos:
+Errores sintacticos:
+Errores semanticos:
+_var34:
+    Uso: variable
+    Tipo: float
+6.9:
+    Reservada: false
+    Tipo: float
+    Contador: 1
+_var33:
+    Uso: variable
+    Tipo: float
+-1252.97059:
+    Reservada: false
+    Tipo: float
+    Contador: 1
+_var36:
+    Uso: variable
+    Tipo: float
+_var35:
+    Uso: variable
+    Tipo: float
+-95.5:
+    Reservada: false
+    Tipo: float
+    Contador: 1
+sumar_DividirId:
+    Reservada: false
+    Uso: nombreMetodo
+    Contador: 1
+float:
+    Reservada: true
+idHijo:
+    Reservada: false
+    Uso: nombreAtributo
+    Tipo: float
+    Contador: 1
+else:
+    Reservada: true
+objC@idHijo2:
+    Reservada: false
+    Uso: nombreAtributo
+    Tipo: int
+    Contador: 1
+end_if:
+    Reservada: true
+objB:
+    Reservada: false
+    Uso: variable
+    Tipo: B
+    Contador: 1
+objA:
+    Reservada: false
+    Uso: variable
+    Tipo: A
+    Contador: 1
+id:
+    Reservada: false
+    Uso: nombreAtributo
+    Tipo: int
+    Contador: 1
+45.0:
+    Reservada: false
+    Tipo: float
+    Contador: 1
+if:
+    Reservada: true
+objC:
+    Reservada: false
+    Uso: variable
+    Tipo: C
+    Contador: 1
+10:
+    Reservada: false
+    Tipo: int
+    Contador: 1
+_var9:
+    Uso: variable
+    Tipo: float
+objC@suma2:
+    Reservada: false
+    Uso: nombreAtributo
+    Tipo: float
+    Contador: 1
+void:
+    Reservada: true
+suma_parcial:
+    Reservada: false
+    Uso: variable
+    Tipo: float
+    Contador: 1
+idHijo2:
+    Reservada: false
+    Uso: nombreAtributo
+    Tipo: int
+    Contador: 1
+suma_total:
+    Reservada: false
+    Uso: variable
+    Tipo: float
+    Contador: 1
+0:
+    Reservada: false
+    Tipo: int
+    Contador: 3
+-Asigne ID :
+    Reservada: false
+    Tipo: cadena
+    NombreString: str0
+    Contador: 1
+10.5:
+    Reservada: false
+    Tipo: float
+    Contador: 1
+1:
+    Reservada: false
+    Tipo: int
+    Contador: 1
+1.0:
+    Reservada: false
+    Tipo: float
+    Contador: 1
+extends:
+    Reservada: true
+Suma parcial 2 es mayor:
+    Reservada: false
+    Tipo: cadena
+    NombreString: str1
+    Contador: 1
+12.0:
+    Reservada: false
+    Tipo: float
+    Contador: 1
+5.0:
+    Reservada: false
+    Tipo: float
+    Contador: 1
+3.4:
+    Reservada: false
+    Tipo: float
+    Contador: 1
+Mal:
+    Reservada: false
+    Tipo: cadena
+    NombreString: str3
+    Contador: 1
+begin:
+    Reservada: true
+suma:
+    Reservada: false
+    Uso: nombreAtributo
+    Tipo: float
+    Contador: 1
+A:
+    Reservada: false
+    MetodosClase: [asignarId]
+    Uso: nombreClase
+    VariablesClase: [id]
+    Contador: 1
+B:
+    Reservada: false
+    MetodosClase: [asignarId, sumar_DividirId]
+    Uso: nombreClase
+    VariablesClase: [id, idHijo, suma]
+    Contador: 1
+C:
+    Reservada: false
+    MetodosClase: []
+    Uso: nombreClase
+    VariablesClase: [idHijo2, suma2]
+    Contador: 1
+_var16:
+    Uso: variable
+    Tipo: float
+contador2:
+    Reservada: false
+    Uso: variable
+    Tipo: int
+    Contador: 1
+for:
+    Reservada: true
+asignarId:
+    Reservada: false
+    Uso: nombreMetodo
+    Contador: 1
+Bien:
+    Reservada: false
+    Tipo: cadena
+    NombreString: str2
+    Contador: 1
+objB@id:
+    Reservada: false
+    Uso: nombreAtributo
+    Tipo: int
+    Contador: 1
+contador:
+    Reservada: false
+    Uso: variable
+    Tipo: int
+    Contador: 1
+end:
+    Reservada: true
+class:
+    Reservada: true
+objB@suma:
+    Reservada: false
+    Uso: nombreAtributo
+    Tipo: float
+    Contador: 1
+_var27:
+    Uso: variable
+    Tipo: int
+int:
+    Reservada: true
+print:
+    Reservada: true
+objA@id:
+    Reservada: false
+    Uso: nombreAtributo
+    Tipo: int
+    Contador: 1
+suma2:
+    Reservada: false
+    Uso: nombreAtributo
+    Tipo: float
+    Contador: 1
+suma_parcial2:
+    Reservada: false
+    Uso: variable
+    Tipo: float
+    Contador: 1
+objB@idHijo:
+    Reservada: false
+    Uso: nombreAtributo
+    Tipo: float
+    Contador: 1
+
+Tercetos
+0-(CHECKOVERFLOWFLOAT,null,null,null,_var0)
+1-(OVERFLOW_FLOAT,null,null,null,_var1)
+2-(OVERFLOW_INT,null,null,null,_var2)
+3-(DIVISIONCERO,null,null,null,_var3)
+4-(METODO,asignarId,null,null,_var4)
+5-(:=,id,0,int,_var5)
+6-(PRINT,-Asigne ID ,null,null,_var6)
+7-(TERMINA_METODO,null,null,null,_var7)
+8-(METODO,sumar_DividirId,null,null,_var8)
+9-(+,suma_parcial,idHijo,float,_var9)
+10-(:=,suma,[9],float,_var10)
+11-(:=,id,0,int,_var11)
+12-(TERMINA_METODO,null,null,null,_var12)
+13-(LABEL,START,null,null,_var13)
+14-(:=,objB@idHijo,6.9,float,_var14)
+15-(:=,suma_parcial,5.0,float,_var15)
+16-(*,10.5,suma_parcial,float,_var16)
+17-(:=,suma_parcial2,[16],float,_var17)
+18-(CMP,suma_parcial2,suma_parcial,float,_var18)
+19-(JLE,[18],[21],null,_var19)
+20-(PRINT,Suma parcial 2 es mayor,null,null,_var20)
+21-(LABEL,Label21,null,null,_var21)
+22-(:=,contador,0,int,_var22)
+23-(LABEL,Label23,null,null,_var23)
+24-(CMP,contador,10,int,_var24)
+25-(JGE,[24],[32],null,_var25)
+26-(:=,id,objA@id,int,_var28)
+27-(CALL,asignarId,objA,null,_var29)
+28-(:=,objA@id,id,int,_var30)
+29-(+,contador,1,int,_var27)
+30-(:=,contador,[29],int,_var26)
+31-(BI,null,[23],null,_var31)
+32-(LABEL,Label32,null,null,_var32)
+33-(/,-95.5,3.4,float,_var33)
+34-(*,[33],45.0,float,_var34)
+35-(+,12.0,[34],float,_var35)
+36-(-,[35],1.0,float,_var36)
+37-(:=,suma_parcial,[36],float,_var37)
+38-(CMP,suma_parcial,-1252.97059,float,_var38)
+39-(JNE,[38],[42],null,_var39)
+40-(PRINT,Bien,null,null,_var40)
+41-(BI,null,[44],null,_var41)
+42-(LABEL,Label42,null,null,_var42)
+43-(PRINT,Mal,null,null,_var43)
+44-(LABEL,Label44,null,null,_var44)
+45-(END_PROGRAMA,null,null,float,_var45)

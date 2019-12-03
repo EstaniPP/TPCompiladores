@@ -848,7 +848,7 @@ final static String yyrule[] = {
 					escribir1.write(sb.toString());
 					escribir1.write("include \\masm32\\include\\masm32rt.inc");
 					escribir1.write(sb.toString());
-					escribir1.write("include \\masm32\\include\\windows.inc");
+					/*escribir1.write("include \\masm32\\include\\windows.inc");
 					escribir1.write(sb.toString());
 					escribir1.write("include \\masm32\\include\\kernel32.inc");
 					escribir1.write(sb.toString());
@@ -857,7 +857,7 @@ final static String yyrule[] = {
 					escribir1.write("includelib \\masm32\\lib\\kernel32.lib");
 					escribir1.write(sb.toString());
 					escribir1.write("includelib \\masm32\\lib\\user32.lib");
-					escribir1.write(sb.toString());
+					escribir1.write(sb.toString());*/
 					escribir1.write(".data");
 					escribir1.write(sb.toString());
 
